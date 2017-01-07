@@ -4,10 +4,22 @@ This repository contains a Python client for [Emitter](https://emitter.io) (see 
 
 This library provides a nicer MQTT interface fine-tuned and extended with specific features provided by [Emitter](https://emitter.io). The code uses the [Eclipse Paho MQTT Python Client](https://github.com/eclipse/paho.mqtt.python) for handling all the network communication and MQTT protocol, and is released under the same license (EPL v1). 
 
+* [Installation](#install)
+* [Example](#example)
+* [API](#api)
+
+<a name="install"></a>
+## Installation
+
+This SDK is available as a pip package :
+```
+pip install emitter-io
+```
+
 <a name="example"></a>
 ## Example
 
-See test.py.
+See sample-python2.py and sample-python3.py.
 
 <a name="api"></a>
 ## API
