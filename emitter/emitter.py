@@ -1,4 +1,4 @@
-import paho as mqtt
+from . import paho as mqtt
 import json
 import logging
 import re
