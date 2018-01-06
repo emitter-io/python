@@ -93,7 +93,7 @@ class Emitter(object):
         # Default options.
         defaultConnectOptions = {
             "host": "api.emitter.io",
-            "port": 8443 if options["secure"] else 8080,
+            "port": 443 if options["secure"] else 8080,
             "keepalive": 30,
             "secure": False
         }
