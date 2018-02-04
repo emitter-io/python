@@ -13,7 +13,7 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
 setup(
     name='emitter-io',
 
-    version='1.0.1',
+    version='1.0.2',
     description='A Python library to interract with the Emitter API.',
     long_description=long_description,
     url='https://emitter.io/',
@@ -25,7 +25,7 @@ setup(
         'Intended Audience :: Developers',
         'Topic :: Communications',
         'Topic :: Internet :: WWW/HTTP',
-        'License :: Eclipse Public License - v 1.0',
+        'License :: OSI Approved :: Eclipse Public License 1.0 (EPL-1.0)',
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 3'
     ],
@@ -33,4 +33,5 @@ setup(
     packages=[
         'emitter'
     ],
+	install_requires=['paho-mqtt'],
 )

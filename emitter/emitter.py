@@ -1,4 +1,5 @@
-from . import paho as mqtt
+import paho.mqtt.client as mqtt
+import ssl
 import json
 import logging
 import re
@@ -104,13 +105,21 @@ class Emitter(object):
 
         options["host"] = re.sub(r"/.*?:\/\//g", "", options["host"])
         self._callbacks = {}
-        
+
         self._mqtt = mqtt.Client()
         self._mqtt.reinitialise(client_id="", clean_session = True, userdata = None)
+
+        # Configure for SSL without certificate.
+        if options["secure"]:
+            ssl_ctx = ssl.create_default_context()
+            ssl_ctx.check_hostname = False
+            ssl_ctx.verify_mode = ssl.CERT_NONE
+            self._mqtt.tls_set_context(ssl_ctx)
+                    
         self._mqtt.on_connect = self._onConnect
         self._mqtt.on_disconnect = self._onDisconnect
 
-        self._mqtt.connect(options["host"], port=options["port"], keepalive=options["keepalive"], secure=options["secure"])
+        self._mqtt.connect(options["host"], port=options["port"], keepalive=options["keepalive"])
 
         def processMsg(client, userdata, msg):
             message = EmitterMessage(msg)
