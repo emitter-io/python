@@ -88,13 +88,15 @@ class Emitter(object):
      * Connects to the emitter service.
     """
     def connect(self, options={}):
+        
+        if "secure" not in options:
+            options["secure"] = False
 
         # Default options.
         defaultConnectOptions = {
             "host": "api.emitter.io",
             "port": 443 if options["secure"] else 8080,
             "keepalive": 30,
-            "secure": False
         }
 
         # Apply defaults.
