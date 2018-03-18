@@ -35,7 +35,7 @@ class Emitter(object):
      * reconnecting to the broker. 
     """
     def loopStart(self):
-        self._mqtt.loop_start();
+        self._mqtt.loop_start()
 
     def loopStop(self):
         self._mqtt.loop_stop()
@@ -88,6 +88,7 @@ class Emitter(object):
      * Connects to the emitter service.
     """
     def connect(self, options={}):
+        
         if "secure" not in options:
             options["secure"] = False
 
@@ -96,7 +97,6 @@ class Emitter(object):
             "host": "api.emitter.io",
             "port": 443 if options["secure"] else 8080,
             "keepalive": 30,
-            "secure": False
         }
 
         # Apply defaults.
@@ -185,7 +185,7 @@ class Emitter(object):
             logging.error("emitter.on: unknown event type, supported values are 'connect', 'disconnect', 'message', 'keygen', and 'presence'.");
         
         # Set the callback.
-        self._callbacks[event] = callback;
+        self._callbacks[event] = callback
 
     """
      * Unsubscribes from a particular channel.
@@ -223,11 +223,11 @@ class Emitter(object):
 
         request = {"key": key, "channel": channel}
         # Publish the request.
-        self._mqtt.publish("emitter/presence/", json.dumps(request));
+        self._mqtt.publish("emitter/presence/", json.dumps(request))
         
 
 """
- * Represents a message send througn emitter.io
+ * Represents a message send through emitter.io
 """
 class EmitterMessage(object):
 
@@ -254,7 +254,7 @@ class EmitterMessage(object):
      * Returns the payload as JSON-deserialized object.
     """
     def asObject(self):
-        msg = None;
+        msg = None
         try:
             msg = json.loads(self.binary)
         except Exception as e:
