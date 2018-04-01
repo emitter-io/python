@@ -4,6 +4,12 @@ import json
 import logging
 import re
 
+try:
+    from urllib import urlencode
+except ImportError:
+    from urllib.parse import urlencode
+
+
 class Emitter(object):
 
     def __init__(self):
@@ -66,7 +72,7 @@ class Emitter(object):
     """
      * Formats a channel for emitter.io protocol.
     """
-    def _formatChannel(self, key, channel, options):
+    def _formatChannel(self, key, channel, options=None):
         # Prefix with the key.
         formatted = key + channel if key.endswith("/") else key + "/" + channel
 
@@ -75,13 +81,11 @@ class Emitter(object):
             formatted = formatted + "/"
 
         # Add options.
-        if options is not None and len(options) > 0:
-            formatted = formatted + "?"
-
-            for option in options[:-1]:
-                formatted = formatted + option.key + "=" + option.value + "&"
-            formatted = formatted + option.key + "=" + option.value
-
+        if options:
+            formatted = "{formatted}?{querystring}".format(
+                formatted=formatted,
+                querystring=urlencode(options),
+            )
         return formatted
 
     """
@@ -196,7 +200,7 @@ class Emitter(object):
         if type(channel) is not str:
             logging.error("emitter.publish: request object does not contain a 'channel' string.")
             
-        topic = self._formatChannel(key, channel, None)
+        topic = self._formatChannel(key, channel)
         self._mqtt.unsubscribe(topic)
 
     """
