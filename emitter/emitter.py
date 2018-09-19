@@ -111,7 +111,7 @@ class Emitter(object):
         self._callbacks = {}
 
         self._mqtt = mqtt.Client()
-        self._mqtt.reinitialise(client_id="", clean_session = True, userdata = None)
+        self._mqtt.reinitialise(client_id="", clean_session=True, userdata=None)
 
         # Configure for SSL without certificate.
         if options["secure"]:
