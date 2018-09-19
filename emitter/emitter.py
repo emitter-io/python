@@ -94,7 +94,7 @@ class Emitter(object):
     def connect(self, options={}):
         
         if "secure" not in options:
-            options["secure"] = False
+            options["secure"] = True
 
         # Default options.
         defaultConnectOptions = {
