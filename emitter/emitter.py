@@ -116,8 +116,6 @@ class Emitter(object):
         # Configure for SSL without certificate.
         if options["secure"]:
             ssl_ctx = ssl.create_default_context()
-            ssl_ctx.check_hostname = False
-            ssl_ctx.verify_mode = ssl.CERT_NONE
             self._mqtt.tls_set_context(ssl_ctx)
                     
         self._mqtt.on_connect = self._onConnect
