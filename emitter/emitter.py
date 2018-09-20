@@ -100,7 +100,7 @@ class Emitter(object):
         defaultConnectOptions = {
             "host": "api.emitter.io",
             "port": 443 if options["secure"] else 8080,
-            "keepalive": 30,
+            "keepalive": 30
         }
 
         # Apply defaults.
@@ -111,7 +111,6 @@ class Emitter(object):
         self._callbacks = {}
 
         self._mqtt = mqtt.Client()
-        self._mqtt.reinitialise(client_id="", clean_session=True, userdata=None)
 
         # Configure for SSL without certificate.
         if options["secure"]:
