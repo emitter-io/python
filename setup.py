@@ -12,9 +12,8 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
 
 setup(
     name='emitter-io',
-
-    version='1.0.3',
-    description='A Python library to interract with the Emitter API.',
+    version='1.1.0',
+    description='A Python library to interact with the Emitter API.',
     long_description=long_description,
     url='https://emitter.io/',
     author='Florimond Husquinet',
@@ -33,5 +32,5 @@ setup(
     packages=[
         'emitter'
     ],
-	install_requires=['paho-mqtt'],
+    install_requires=['paho-mqtt'],
 )
