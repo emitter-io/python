@@ -5,11 +5,14 @@ import logging
 import re
 
 try:
-    from urllib import urlencode
-except ImportError:
     from urllib.parse import urlencode
+except ImportError:
+    from urllib import urlencode
 
 
+"""
+ * Represents the client connection to an Emitter server.
+"""
 class Emitter(object):
 
     def __init__(self):
@@ -89,7 +92,7 @@ class Emitter(object):
         return formatted
 
     """
-     * Connects to the emitter service.
+     * Connects to an Emitter server.
     """
     def connect(self, options={}):
         
@@ -112,7 +115,6 @@ class Emitter(object):
 
         self._mqtt = mqtt.Client()
 
-        # Configure for SSL without certificate.
         if options["secure"]:
             ssl_ctx = ssl.create_default_context()
             self._mqtt.tls_set_context(ssl_ctx)
@@ -137,13 +139,13 @@ class Emitter(object):
         self._mqtt.on_message = processMsg
 
     """
-     * Disconnects the client.
+     * Disconnects from the connected Emitter server.
     """
     def disconnect(self):
         self._mqtt.disconnect()
 
     """
-    * Publishes a message to the currently opened endpoint.
+    * Publishes a message to a channel.
     """
     def publish(self, key, channel, message, ttl=None):
         if type(key) is not str:
@@ -158,16 +160,14 @@ class Emitter(object):
         topic = self._formatChannel(key, channel, options)
         self._mqtt.publish(topic, message)
 
-
     """
-    * Subscribes to a particular channel.
+    * Subscribes to a particual channel.
     """
     def subscribe(self, key, channel, last=None):
         if type(key) is not str:
             logging.error("emitter.publish: request object does not contain a 'key' string.")
         if type(channel) is not str:
             logging.error("emitter.publish: request object does not contain a 'channel' string.")
-
             
         options = {}
         if last is not None:
@@ -177,7 +177,7 @@ class Emitter(object):
         self._mqtt.subscribe(topic)
 
     """
-     * Hooks an event to the client.
+     * Registers a callback for different events.
     """
     def on(self, event, callback):
         # Validate the type.
@@ -228,7 +228,7 @@ class Emitter(object):
         
 
 """
- * Represents a message send through emitter.io
+ * Represents a message received from the Emitter server.
 """
 class EmitterMessage(object):
 
@@ -240,19 +240,19 @@ class EmitterMessage(object):
         self.binary = m.payload
 
     """
-     * Returns the payload as string.
+     * Returns the payload as a utf-8 string.
     """
     def asString(self):
         return str(self.binary)
 
     """
-     * Returns the payload as binary.
+     * Returns the payload as a raw binary buffer.
     """
     def asBinary(self):
         return self.binary
 
     """
-     * Returns the payload as JSON-deserialized object.
+     * Returns the payload as an JSON-deserialized Python object.
     """
     def asObject(self):
         msg = None
@@ -261,4 +261,4 @@ class EmitterMessage(object):
         except Exception as e:
             logging.exception(e)
 
-        return msg 
+        return msg
