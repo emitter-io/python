@@ -10,12 +10,12 @@ This library provides a nicer high-level MQTT interface fine-tuned and extended 
 * [Examples](#examples)
 * [API](#api)
 
-<a name="install"></a>
-## Installation
+~~<a name="install"></a>~~
+~~## Installation~~
 
-This SDK is available as a pip package: 
+~~This SDK is available as a pip package:~~ 
 ```
-pip install emitter-io
+~~pip install emitter-io~~
 ```
 
 <a name="examples"></a>
