@@ -13,7 +13,7 @@ This library provides a nicer high-level MQTT interface fine-tuned and extended 
 <a name="install"></a>
 ## Installation
 
-This SDK is available as a pip package BUT it is no longer: 
+This SDK is available as a pip package: 
 ```
 pip install emitter-io
 ```
