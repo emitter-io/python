@@ -14,7 +14,7 @@ setuptools.setup(
     url="https://emitter.io",
     packages=["emitter"],
     classifiers=[
-        "Development Status :: 4 - Beta",
+        "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",
         "Topic :: Communications",
         "Topic :: Internet :: WWW/HTTP",
