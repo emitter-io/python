@@ -1,44 +1,49 @@
 # Emitter Python SDK
 
-[![PyPI](https://img.shields.io/pypi/v/emitter-io.svg)](https://github.com/emitter-io/python) [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/emitter-io.svg?logo=python)](https://github.com/emitter-io/python)
+[![PyPI](https://img.shields.io/pypi/v/emitter-io.svg?style=flat-square)](https://pypi.org/project/emitter-io) [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/emitter-io.svg?logo=python&style=flat-square)](https://github.com/emitter-io/python) [![PyPI - Python Version](https://img.shields.io/github/license/emitter-io/python.svg?style=flat-square)](https://github.com/emitter-io/python/blob/master/LICENSE)
 
 This repository contains a Python client for [Emitter](https://emitter.io) (see also [Emitter GitHub](https://github.com/emitter-io/emitter)). Emitter is an **open-source** real-time communication service for connecting online devices. At its core, emitter.io is a distributed, scalable and fault-tolerant publish-subscribe messaging platform based on MQTT protocol and featuring message storage.
 
-This library provides a nicer high-level MQTT interface fine-tuned and extended with specific features provided by [Emitter](https://emitter.io). The code uses the [Eclipse Paho MQTT Python Client](https://github.com/eclipse/paho.mqtt.python) for handling all the network communication and MQTT protocol, and is released under the same license (EPL v1). 
+This library provides a nicer high-level MQTT interface fine-tuned and extended with specific features provided by [Emitter](https://emitter.io). The code uses the [Eclipse Paho MQTT Python Client](https://github.com/eclipse/paho.mqtt.python) for handling all the network communication and MQTT protocol.
 
 * [Installation](#install)
 * [Examples](#examples)
-* [API](#api)
+* [API reference](#api)
+* [Miscellaneous](#misc)
+
 
 <a name="install"></a>
 ## Installation
 
-This SDK is available as a pip package: 
+This SDK is available as a pip package. Install with: 
 ```
 pip install emitter-io
 ```
 
+
 <a name="examples"></a>
 ## Examples
 
-See [*sample-python2.py*](emitter/sample-python2.py) and [*sample-python3.py*](emitter/sample-python3.py).
+* Python 2: [*sample-python2.py*](emitter/sample-python2.py)
+* Python 3: [*sample-python3.py*](emitter/sample-python3.py)
+
 
 <a name="api"></a>
-## API
+## API Reference
 
-  * [```connect()```](#connect)
-  * [```Emitter()```](#emitter)
-  	* [```.publish()```](#connect)
-  	* [```.subscribe()```](#subscribe)
-  	* [```.unsubscribe()```](#unsubscribe)
-  	* [```.disconnect()```](#disconnect)
-  	* [```.on()```](#on)
-  	* [```.presence()```](#presence)
-    * [```.keygen()```](#keygen)
-  * [```EmitterMessage()```](#message)
-  	* [```.asString()```](#asString)
-  	* [```.asBinary()```](#asBinary)
-  	* [```.asObject()```](#asObject)
+* [```connect()```](#connect)
+* [```Emitter()```](#emitter)
+  * [```.publish()```](#connect)
+  * [```.subscribe()```](#subscribe)
+  * [```.unsubscribe()```](#unsubscribe)
+  * [```.disconnect()```](#disconnect)
+  * [```.on()```](#on)
+  * [```.presence()```](#presence)
+  * [```.keygen()```](#keygen)
+* [```EmitterMessage()```](#message)
+  * [```.asString()```](#asString)
+  * [```.asBinary()```](#asBinary)
+  * [```.asObject()```](#asObject)
 
 -------------------------------------------------------
 <a name="connect"></a>
@@ -246,3 +251,17 @@ Returns the payload as a raw binary buffer.
 message.asObject()
 ```
 Returns the payload as an JSON-deserialized Python `Object`.
+
+
+<a name="misc"></a>
+## Miscellaneous
+
+### ToDo
+
+- Update the presence and keygen details in the README (see the **ToDo** markings)
+- Same feature status as the JavaScript libary (`username` in presence; Emitter#me() function)
+
+### License
+
+Eclipse Public License 1.0 (EPL-1.0)
+Copyright (c) [Misakai Ltd.](http://misakai.com)

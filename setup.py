@@ -1,36 +1,27 @@
-# Always prefer setuptools over distutils
-from setuptools import setup, find_packages
-# To use a consistent encoding
-from codecs import open
-from os import path
+import setuptools
 
-here = path.abspath(path.dirname(__file__))
+with open("README.md", "r") as fh:
+    long_description = fh.read()
 
-# Get the long description from the README file
-with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
-    long_description = f.read()
-
-setup(
-    name='emitter-io',
-    version='1.1.0',
-    description='A Python library to interact with the Emitter API.',
+setuptools.setup(
+    name="emitter-io",
+    version="1.1.1",
+    author="Florimond Husquinet",
+    author_email="florimond@emitter.io",
+    description="A Python library to interact with the Emitter API.",
     long_description=long_description,
-    url='https://emitter.io/',
-    author='Florimond Husquinet',
-    author_email='florimond@emitter.io',
-    license='EPL-1.0',
+    long_description_content_type="text/markdown",
+    url="https://emitter.io",
+    packages=["emitter"],
     classifiers=[
-        'Development Status :: 4 - Beta',
-        'Intended Audience :: Developers',
-        'Topic :: Communications',
-        'Topic :: Internet :: WWW/HTTP',
-        'License :: OSI Approved :: Eclipse Public License 1.0 (EPL-1.0)',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 3'
+        "Development Status :: 5 - Production/Stable",
+        "Intended Audience :: Developers",
+        "Topic :: Communications",
+        "Topic :: Internet :: WWW/HTTP",
+        "License :: OSI Approved :: Eclipse Public License 1.0 (EPL-1.0)",
+        "Programming Language :: Python :: 2",
+        "Programming Language :: Python :: 3"
     ],
-    keywords='emitter mqtt realtime cloud service',
-    packages=[
-        'emitter'
-    ],
-    install_requires=['paho-mqtt'],
+    keywords="emitter mqtt realtime cloud service",
+    install_requires=["paho-mqtt"]
 )
