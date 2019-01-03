@@ -1,8 +1,15 @@
-import paho.mqtt.client as mqtt
-import ssl
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+This is the Python client for Emitter (emitter.io).
+GitHub: github.com/emitter-io/python
+License: Eclipse Public License 1.0 (EPL-1.0)
+"""
 import json
 import logging
 import re
+import ssl
+import paho.mqtt.client as mqtt
 
 try:
     from urllib.parse import urlencode
@@ -10,61 +17,69 @@ except ImportError:
     from urllib import urlencode
 
 
-"""
- * Represents the client connection to an Emitter server.
-"""
 class Emitter(object):
+    """
+    * Represents the client connection to an Emitter server.
+    """
 
     def __init__(self):
-        pass
+        """
+        * Registrate the variables for later use.
+        """
+        self._mqtt = None
+        self._callbacks = {}
 
-    """
-     * Call regularly to process network events. This call waits in select()
-     * until the network socket is available for reading or writing, if
-     * appropriate, then handles the incoming/outgoing data. This function
-     * blocks for up to timeout seconds.
-     * timeout must not exceed the keepalive value for the client or your
-     * client will be regularly disconnected by the broker.
-    """
     def loop(self, timeout):
+        """
+        * Call regularly to process network events. This call waits in select()
+        * until the network socket is available for reading or writing, if
+        * appropriate, then handles the incoming/outgoing data. This function
+        * blocks for up to timeout seconds.
+        * timeout must not exceed the keepalive value for the client or your
+        * client will be regularly disconnected by the broker.
+        """
         self._mqtt.loop(timeout=timeout)
 
-    """
-     * This is a blocking form of the network loop and will not return until the
-     * client calls disconnect(). It automatically handles reconnecting.
-    """
     def loopForever(self):
+        """
+        * This is a blocking form of the network loop and will not return until the
+        * client calls disconnect(). It automatically handles reconnecting.
+        """
         self._mqtt.loop_forever()
 
-    """
-     * These functions implement a threaded interface to the network loop.
-     * Calling loop_start() once, before or after connect*(), runs a thread in
-     * the background to call loop() automatically. This frees up the main
-     * thread for other work that may be blocking. This call also handles
-     * reconnecting to the broker. 
-    """
     def loopStart(self):
+        """
+        * These functions implement a threaded interface to the network loop.
+        * Calling loop_start() once, before or after connect*(), runs a thread in
+        * the background to call loop() automatically. This frees up the main
+        * thread for other work that may be blocking. This call also handles
+        * reconnecting to the broker.
+        """
         self._mqtt.loop_start()
 
     def loopStop(self):
+        """
+        * Stops the loop started in loopStart().
+        * See loopStart() for more information.
+        """
         self._mqtt.loop_stop()
 
-    """
-     * Occurs when connection is established.
-    """
     def _onConnect(self, client, userdata, flags, rc):
+        """
+        * Occurs when connection is established.
+        """
         self._tryInvoke("connect")
 
-    """
-     * Occurs when the connection was lost.
-    """
     def _onDisconnect(self, client, userdata, rc):
+        """
+        * Occurs when the connection was lost.
+        """
         self._tryInvoke("disconnect")
 
-    """
-     * Invokes the callback with a specific
-    """    
     def _tryInvoke(self, name, args=None):
+        """
+        * Invokes the callback with a specific
+        """
         if name in self._callbacks and self._callbacks[name] is not None:
             if args is None:
                 self._callbacks[name]()
@@ -72,10 +87,11 @@ class Emitter(object):
                 self._callbacks[name](args)
             return
 
-    """
-     * Formats a channel for emitter.io protocol.
-    """
-    def _formatChannel(self, key, channel, options=None):
+    @staticmethod
+    def _formatChannel(key, channel, options=None):
+        """
+        * Formats a channel for emitter.io protocol.
+        """
         # Prefix with the key.
         formatted = key + channel if key.endswith("/") else key + "/" + channel
 
@@ -91,38 +107,10 @@ class Emitter(object):
             )
         return formatted
 
-    """
-     * Connects to an Emitter server.
-    """
     def connect(self, options={}):
-        
-        if "secure" not in options:
-            options["secure"] = True
-
-        # Default options.
-        defaultConnectOptions = {
-            "host": "api.emitter.io",
-            "port": 443 if options["secure"] else 8080,
-            "keepalive": 30
-        }
-
-        # Apply defaults.
-        for k in defaultConnectOptions:
-            options[k] = defaultConnectOptions[k] if k not in options else options[k]
-
-        options["host"] = re.sub(r"/.*?:\/\//g", "", options["host"])
-        self._callbacks = {}
-
-        self._mqtt = mqtt.Client()
-
-        if options["secure"]:
-            ssl_ctx = ssl.create_default_context()
-            self._mqtt.tls_set_context(ssl_ctx)
-                    
-        self._mqtt.on_connect = self._onConnect
-        self._mqtt.on_disconnect = self._onDisconnect
-
-        self._mqtt.connect(options["host"], port=options["port"], keepalive=options["keepalive"])
+        """
+        * Connects to an Emitter server.
+        """
 
         def processMsg(client, userdata, msg):
             message = EmitterMessage(msg)
@@ -133,24 +121,42 @@ class Emitter(object):
                 # This is a presence message.
                 self._tryInvoke("presence", message.asObject())
             else:
-                # Do we have a message callback?
+                # This is a text message.
                 self._tryInvoke("message", message)
 
+        # Default options.
+        if "secure" not in options:
+            options["secure"] = True
+        defaultConnectOptions = {
+            "host": "api.emitter.io",
+            "port": 443 if options["secure"] else 8080,
+            "keepalive": 30
+        }
+        # Apply defaults.
+        for k in defaultConnectOptions:
+            options[k] = defaultConnectOptions[k] if k not in options else options[k]
+
+        options["host"] = re.sub(r"/.*?:\/\//g", "", options["host"])
+        self._callbacks = {}
+        self._mqtt = mqtt.Client()
+
+        if options["secure"]:
+            ssl_ctx = ssl.create_default_context()
+            self._mqtt.tls_set_context(ssl_ctx)
+
+        self._mqtt.on_connect = self._onConnect
+        self._mqtt.on_disconnect = self._onDisconnect
         self._mqtt.on_message = processMsg
 
-    """
-     * Disconnects from the connected Emitter server.
-    """
-    def disconnect(self):
-        self._mqtt.disconnect()
+        self._mqtt.connect(options["host"], port=options["port"], keepalive=options["keepalive"])
 
-    """
-    * Publishes a message to a channel.
-    """
     def publish(self, key, channel, message, ttl=None):
-        if type(key) is not str:
+        """
+        * Publishes a message to a channel.
+        """
+        if not isinstance(key, str):
             logging.error("emitter.publish: request object does not contain a 'key' string.")
-        if type(channel) is not str:
+        if not isinstance(channel, str):
             logging.error("emitter.publish: request object does not contain a 'channel' string.")
 
         options = {}
@@ -160,15 +166,15 @@ class Emitter(object):
         topic = self._formatChannel(key, channel, options)
         self._mqtt.publish(topic, message)
 
-    """
-    * Subscribes to a particual channel.
-    """
     def subscribe(self, key, channel, last=None):
-        if type(key) is not str:
+        """
+        * Subscribes to a particual channel.
+        """
+        if not isinstance(key, str):
             logging.error("emitter.publish: request object does not contain a 'key' string.")
-        if type(channel) is not str:
+        if not isinstance(channel, str):
             logging.error("emitter.publish: request object does not contain a 'channel' string.")
-            
+
         options = {}
         if last is not None:
             options["last"] = str(last)
@@ -176,89 +182,95 @@ class Emitter(object):
         topic = self._formatChannel(key, channel, options)
         self._mqtt.subscribe(topic)
 
-    """
-     * Registers a callback for different events.
-    """
-    def on(self, event, callback):
-        # Validate the type.
-
-        if event not in ["connect", "disconnect", "message", "keygen", "presence"]:
-            logging.error("emitter.on: unknown event type, supported values are 'connect', 'disconnect', 'message', 'keygen', and 'presence'.");
-        
-        # Set the callback.
-        self._callbacks[event] = callback
-
-    """
-     * Unsubscribes from a particular channel.
-    """
     def unsubscribe(self, key, channel):
-        if type(key) is not str:
+        """
+        * Unsubscribes from a particular channel.
+        """
+        if not isinstance(key, str):
             logging.error("emitter.publish: request object does not contain a 'key' string.")
-        if type(channel) is not str:
+        if not isinstance(channel, str):
             logging.error("emitter.publish: request object does not contain a 'channel' string.")
-            
+
         topic = self._formatChannel(key, channel)
         self._mqtt.unsubscribe(topic)
 
-    """
-     * Sends a key generation request to the server.
-    """
-    def keygen(self, key, channel):
-        if type(key) is not str:
-            logging.error("emitter.publish: request object does not contain a 'key' string.")
-        if type(channel) is not str:
-            logging.error("emitter.publish: request object does not contain a 'channel' string.")
+    def disconnect(self):
+        """
+        * Disconnects from the connected Emitter server.
+        """
+        self._mqtt.disconnect()
 
-        request = {"key": key, "channel": channel}    
-        # Publish the request.
-        self._mqtt.publish("emitter/keygen/", json.dumps(request))
+    def on(self, event, callback):
+        """
+        * Registers a callback for different events.
+        """
+        # Validate the type.
+        if event not in ["connect", "disconnect", "message", "keygen", "presence"]:
+            logging.error("emitter.on: unknown event type, supported values are 'connect', 'disc" \
+                          "onnect', 'message', 'keygen', and 'presence'.")
 
-    """
-     * Sends a presence request to the server.
-    """
+        # Set the callback.
+        self._callbacks[event] = callback
+
     def presence(self, key, channel):
-        if type(key) is not str:
+        """
+        * Sends a presence request to the server.
+        """
+        if not isinstance(key, str):
             logging.error("emitter.publish: request object does not contain a 'key' string.")
-        if type(channel) is not str:
+        if not isinstance(channel, str):
             logging.error("emitter.publish: request object does not contain a 'channel' string.")
 
         request = {"key": key, "channel": channel}
         # Publish the request.
         self._mqtt.publish("emitter/presence/", json.dumps(request))
-        
 
-"""
- * Represents a message received from the Emitter server.
-"""
+    def keygen(self, key, channel):
+        """
+        * Sends a key generation request to the server.
+        """
+        if not isinstance(key, str):
+            logging.error("emitter.publish: request object does not contain a 'key' string.")
+        if not isinstance(channel, str):
+            logging.error("emitter.publish: request object does not contain a 'channel' string.")
+
+        request = {"key": key, "channel": channel}
+        # Publish the request.
+        self._mqtt.publish("emitter/keygen/", json.dumps(request))
+
+
 class EmitterMessage(object):
+    """
+    * Represents a message received from the Emitter server.
+    """
 
-    """
-     * Creates an instance of EmitterMessage.
-    """
-    def __init__(self, m):
-        self.channel = m.topic
-        self.binary = m.payload
+    def __init__(self, message):
+        """
+        * Creates an instance of EmitterMessage.
+        """
+        self.channel = message.topic
+        self.binary = message.payload
 
-    """
-     * Returns the payload as a utf-8 string.
-    """
     def asString(self):
+        """
+        * Returns the payload as a utf-8 string.
+        """
         return str(self.binary)
 
-    """
-     * Returns the payload as a raw binary buffer.
-    """
-    def asBinary(self):
-        return self.binary
-
-    """
-     * Returns the payload as an JSON-deserialized Python object.
-    """
     def asObject(self):
+        """
+        * Returns the payload as an JSON-deserialized Python object.
+        """
         msg = None
         try:
             msg = json.loads(self.binary)
-        except Exception as e:
-            logging.exception(e)
+        except json.JSONDecodeError as exception:
+            logging.exception(exception)
 
         return msg
+
+    def asBinary(self):
+        """
+        * Returns the payload as a raw binary buffer.
+        """
+        return self.binary
