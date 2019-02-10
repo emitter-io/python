@@ -237,6 +237,21 @@ class Emitter(object):
         request = {"key": key, "channel": channel}
         # Publish the request.
         self._mqtt.publish("emitter/keygen/", json.dumps(request))
+    
+    def link(self, key, channel):
+        request = {"key": key, "channel": channel, "name": "a0"}
+        # Publish the request.
+        self._mqtt.publish("emitter/link/", json.dumps(request))
+
+    def linkPrivate(self, key, channel):
+        request = {"key": key, "channel": channel, "name": "a0", "private": True}
+        # Publish the request.
+        self._mqtt.publish("emitter/link/", json.dumps(request))
+
+    def publishShortcut(self, channel, message):
+        # Publish the request.
+        self._mqtt.publish(channel, json.dumps(message))
+        #self._mqtt.publish("a0", "bonjour")
 
 
 class EmitterMessage(object):
