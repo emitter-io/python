@@ -120,6 +120,12 @@ class Emitter(object):
 			elif message.channel.startswith("emitter/presence"):
 				# This is a presence message.
 				self._tryInvoke("presence", message.asObject())
+			elif message.channel.startswith("emitter/error"):
+				# This is an error message.
+				self._tryInvoke("error", message.asObject())
+			elif message.channel.startswith("emitter/me"):
+				# This is a "me" message, giving information about the connection.
+				self._tryInvoke("me", message.asObject())
 			else:
 				# This is a text message.
 				self._tryInvoke("message", message)
@@ -211,9 +217,9 @@ class Emitter(object):
 		* Registers a callback for different events.
 		"""
 		# Validate the type.
-		if event not in ["connect", "disconnect", "message", "keygen", "presence"]:
+		if event not in ["connect", "disconnect", "message", "keygen", "presence", "me", "error"]:
 			logging.error("emitter.on: unknown event type, supported values are 'connect', 'disc" \
-						  "onnect', 'message', 'keygen', and 'presence'.")
+						  "onnect', 'message', 'keygen', 'presence', 'me', and 'error'.")
 
 		# Set the callback.
 		self._callbacks[event] = callback

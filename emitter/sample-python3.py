@@ -10,8 +10,10 @@ def connect():
 	emitter.connect(options)
 	emitter.on("connect", lambda: resultText.insert("0.0", "Connected\n\n"))
 	emitter.on("disconnect", lambda: resultText.insert("0.0", "Disconnected\n\n"))
-	emitter.on("presence", lambda p: resultText.insert("0.0", "Presence message : '" + str(p) + "'\n\n"))
-	emitter.on("message", lambda m: resultText.insert("0.0", "Message received: " + m.asString() + "\n\n"))
+	emitter.on("presence", lambda p: resultText.insert("0.0", "Presence message: '" + str(p) + "'\n\n"))
+	emitter.on("message", lambda m: resultText.insert("0.0", "Message received on " + m.channel + ": " + m.asString() + "\n\n"))
+	emitter.on("error", lambda e: resultText.insert("0.0", "Error received: " + str(e) + "\n\n"))
+	emitter.on("me", lambda me: resultText.insert("0.0", "Information about Me received: " + str(me) +"\n\n"))
 	emitter.loopStart()
 
 def disconnect():
@@ -116,12 +118,5 @@ meButton.grid(column=4, row=2)
 
 resultText = tkinter.Text(root, height=30, width=120)
 resultText.grid(column=1, row=8, columnspan=4)
-
-# option me
-# me
-# auto subscribe
-# error
-
-
 
 root.mainloop()
