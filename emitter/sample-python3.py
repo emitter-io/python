@@ -5,8 +5,8 @@ import json
 emitter = emitter.Emitter()
 
 def connect():
-	options = {"host": "192.168.0.4", "secure": False}
-	#options = {"secure": False}
+	#options = {"host": "192.168.0.4", "secure": False}
+	options = {"secure": False}
 	emitter.connect(options)
 	emitter.on("connect", lambda: resultText.insert("0.0", "Connected\n\n"))
 	emitter.on("disconnect", lambda: resultText.insert("0.0", "Disconnected\n\n"))
@@ -64,9 +64,8 @@ def me():
 	emitter.me()
 
 root = tkinter.Tk()
-#emitterKey = tkinter.StringVar(root, value="5xwvQ9CsH-DYx-P7aR2AzRddQIWYD94S")
-#emitterKey = tkinter.StringVar(root, value="3YvSkz0vf-y68P58WThGUWhL12eV36z1")
-emitterKey = tkinter.StringVar(root, value="EckDAy4LHt_T0eTPSBK_0dmOAGhakMgI")
+emitterKey = tkinter.StringVar(root, value="5xwvQ9CsH-DYx-P7aR2AzRddQIWYD94S")
+#emitterKey = tkinter.StringVar(root, value="EckDAy4LHt_T0eTPSBK_0dmOAGhakMgI")#local
 channel = tkinter.StringVar(root, value="test/")
 shortcut = tkinter.StringVar(root, value="a0")
 
