@@ -156,7 +156,7 @@ class Emitter(object):
 
 		self._mqtt.connect(options["host"], port=options["port"], keepalive=options["keepalive"])
 
-	def publish(self, key, channel, message, ttl=None, me=None):
+	def publish(self, key, channel, message, ttl=None, me=True):
 		"""
 		* Publishes a message to a channel.
 		"""
@@ -169,11 +169,12 @@ class Emitter(object):
 		if ttl is not None:
 			options["ttl"] = str(ttl)
 
-		if me is not None:
-			if me == True:
-				options["me"] = 1
-			else:
-				options["me"] = 0
+		# The default server's behavior when 'me' is absent, is to send the publisher its own messages.
+		# To avoid any ambiguity, this parameter is always set here. 
+		if me:
+			options["me"] = 1
+		else:
+			options["me"] = 0
 
 		topic = self._formatChannel(key, channel, options)
 		self._mqtt.publish(topic, message)
@@ -250,19 +251,22 @@ class Emitter(object):
 		# Publish the request.
 		self._mqtt.publish("emitter/keygen/", json.dumps(request))
 	
-	def link(self, key, channel, name, private, subscribe, ttl=None, me=None):
-		request = {"key": key, "channel": channel, "name": name, "private": private, "subscribe": subscribe}
-
+	def link(self, key, channel, name, private, subscribe, ttl=None, me=True):
 		options = {}
 		if ttl is not None:
 			options["ttl"] = str(ttl)
 
-		if me is not None:
-			if me == True:
-				options["me"] = 1
-			else:
-				options["me"] = 0
+		# The default server's behavior when 'me' is absent, is to send the publisher its own messages.
+		# To avoid any ambiguity, this parameter is always set here. 
+		if me:
+			options["me"] = 1
+		else:
+			options["me"] = 0
 
+		#TODO OPTIONS!
+		#topic = self._formatChannel(, channel, options)
+		request = {"key": key, "channel": channel, "name": name, "private": private, "subscribe": subscribe}
+		
 		# Publish the request.
 		self._mqtt.publish("emitter/link/", json.dumps(request))
 
