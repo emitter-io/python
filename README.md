@@ -43,6 +43,9 @@ These examples show you the whole communication process.
   * [`.on()`](#on)
   * [`.presence()`](#presence)
   * [`.keygen()`](#keygen)
+  * [`.link()`](#link)
+  * [`.publishWithLink()`](#publishWithLink)
+  * [`.me()`](#me)
 * [`EmitterMessage()`](#message)
   * [`.asString()`](#asString)
   * [`.asObject()`](#asObject)
@@ -101,6 +104,24 @@ Emitted when a presence call was made using the [`Emitter#presence()`](#presence
 
 **ToDo: Description!**
 
+##### Event `'me'`
+
+Emitted as a response to a [`.me()`](#me) request. Information provided in the response contains the id of the connection, as well as the links that were established with [`.link()`](#link) requests.
+
+```
+{"id": "74W77OC5OXDBQRUUMSHROHRQPE",
+ "links": {"a0": "test/",
+           "a1": "test/"}}
+```
+
+##### Event `'error'`
+
+Emitted when an error occurs following any request. The event comes with a status code and a text message describing the error.
+
+```
+{"status": 400,
+ "message": "the request was invalid or cannot be otherwise served"}
+```
 -------------------------------------------------------
 <a id="connect"></a>
 ### Emitter#connect(options={})
