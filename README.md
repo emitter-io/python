@@ -144,7 +144,7 @@ Connects to an Emitter server and returns an [Emitter](#client) instance.
 
 -------------------------------------------------------
 <a id="publish"></a>
-### Emitter#publish(key, channel, message, ttl=None)
+### Emitter#publish(key, channel, message, ttl=None, me=True)
 
 ```
 instance.publish("<channel key>",
@@ -157,6 +157,7 @@ Publishes a message to a particual channel.
 * `channel` is the channel name to publish to. (Required | `Str`)
 * `message` is the message to publish (Required | `String` | Default: `30`)
 * `ttl` is the time to live of the message in seconds. When `None` or `0` the message will only be send to all connected instances. (Optional | `Int` | Default: `None`)
+* `me` determines whether the publisher wants to receive his own message in case he is subscribed to `channel`. When `False` the message will be sent to all subscribers except the one publishing. (Optional | `Bool` | Default: `True`)
 
 -------------------------------------------------------
 <a id="subscribe"></a>
@@ -210,7 +211,7 @@ instance.on("connect", connectCallback)
 instance.on("disconnect", disconnectCallback)
 
 def messageHandler(message) # because of the f-Strings only for Python 3.6+
-    print("We just recieved a message!")
+    print("We just recreived a message!")
     print(f"See it asString: {message.asString()}")
     print(f"See it asObject: {message.asObject()}")
     print(f"See it asBinary: {message.asBinary()}")
@@ -253,6 +254,19 @@ instance.keygen("<master key>",
 Sends a key generation request to the server. See also [`Emitter`](#client-keygen) for a description of the event and [`Emitter#on()`](#on) for the possibilities of event handling.
 * `key` is your *master key* to use for the operation. (Required | `Str`)
 * `channel` is the channel name to generate a key for. (Required | `Str`)
+-------------------------------------------------------
+<a id="link"></a>
+### Emitter#link(key, channel, name, private, subscribe, ttl=None, me=True)
+
+```
+instance.link("<channel key>",
+              "<channel name>",
+              "<short name>",
+              "<private>",
+              "<subscribe>",
+              "<ttl>",
+              "<me>")
+```
 
 -------------------------------------------------------
 <a id="message"></a>
