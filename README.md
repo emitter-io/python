@@ -147,15 +147,15 @@ Connects to an Emitter server and returns an [Emitter](#client) instance.
 ### Emitter#publish(key, channel, message, ttl=None, me=True)
 
 ```
-instance.publish("<channel key>",
-                 "<channel name>",
+instance.publish("5xZjIQp6GA9fpxso1Kslqnv8d4XVWChb",
+                 "channel",
                  "Hello Emitter!",
                  ttl=604800) // one week
 ```
 Publishes a message to a particual channel.
 * `key` is the channel key to use for the operation. (Required | `Str`)
 * `channel` is the channel name to publish to. (Required | `Str`)
-* `message` is the message to publish (Required | `String` | Default: `30`)
+* `message` is the message to publish (Required | `String`)
 * `ttl` is the time to live of the message in seconds. When `None` or `0` the message will only be send to all connected instances. (Optional | `Int` | Default: `None`)
 * `me` determines whether the publisher wants to receive his own message in case he is subscribed to `channel`. When `False` the message will be sent to all subscribers except the one publishing. (Optional | `Bool` | Default: `True`)
 
@@ -164,8 +164,8 @@ Publishes a message to a particual channel.
 ### Emitter#subscribe(key, channel, last=None)
 
 ```
-instance.subscribe("<channel key>",
-                   "<channel name>",
+instance.subscribe("5xZjIQp6GA9fpxso1Kslqnv8d4XVWChb",
+                   "channel",
                    last=5)
 ```
 Subscribes to a particual channel.
@@ -178,8 +178,8 @@ Subscribes to a particual channel.
 ### Emitter#unsubscribe(key, channel)
 
 ```
-instance.unsubscribe("<channel key>",
-                     "<channel name>")
+instance.unsubscribe("5xZjIQp6GA9fpxso1Kslqnv8d4XVWChb",
+                     "channel")
 ```
 Unsubscribes from a particual channel.
 * `key` is the channel key to use for the operation. (Required | `Str`)
@@ -236,8 +236,8 @@ instance.on("presence", presenceHandler)
 ### Emitter#presence(key, channel)
 
 ```
-instance.presence("<channel key>",
-                  "<channel name>")
+instance.presence(""5xZjIQp6GA9fpxso1Kslqnv8d4XVWChb"",
+                  "channel")
 ```
 Sends a presence request to the server. See also [`Emitter`](#client-presence) for a description of the event and [`Emitter#on()`](#on) for the possibilities of event handling.
 * `key` is the channel key to use for the operation. (Required | `Str`)
@@ -248,26 +248,55 @@ Sends a presence request to the server. See also [`Emitter`](#client-presence) f
 ### Emitter#keygen(key, channel)
 
 ```
-instance.keygen("<master key>",
-                "<channel name>")
+instance.keygen("Z5auMQhNr0eVnGBAgWThXus1dgtSsvuQ",
+                "channel")
 ```
 Sends a key generation request to the server. See also [`Emitter`](#client-keygen) for a description of the event and [`Emitter#on()`](#on) for the possibilities of event handling.
 * `key` is your *master key* to use for the operation. (Required | `Str`)
 * `channel` is the channel name to generate a key for. (Required | `Str`)
 -------------------------------------------------------
 <a id="link"></a>
-### Emitter#link(key, channel, name, private, subscribe, ttl=None, me=True)
+### Emitter#link(key, channel, shortcut, private, subscribe, ttl=None, me=True)
 
 ```
-instance.link("<channel key>",
-              "<channel name>",
-              "<short name>",
-              "<private>",
-              "<subscribe>",
-              "<ttl>",
-              "<me>")
+instance.link("5xZjIQp6GA9fpxso1Kslqnv8d4XVWChb",
+              "channel",
+              "a0",
+              False,
+              True,
+              ttl=3600,
+              me=False)
 ```
+Sends a link creation request to the server. This allows for the creation of a link between a short 2-character name and an actual channel. This function also allows the creation of a private channel. For more information, see 
+[Emitter: Simplify Client/Server and IoT Apps with Links and Private Links](https://www.youtube.com/watch?v=_FgKiUlEb_s).
+* `key` is the key to the channel. (Required | `Str`)
+* `channel` is the channel name. (Required | `Str`)
+* `shortcut` is the short name for the channel. (Required | `Str`)
+* `private` whether the request is for a private channel. (Required | `Bool`)
+* `subscribe` whether or not to subscribe to the channel. (Required | `Bool`)
+* `ttl` is the time to live of each message that will be sent through the link. (Optional | `Int`)
+* `me` wether or not to receive your own messages sent through the link. (Optional | `Bool`)
+* 
+-------------------------------------------------------
+<a id="publishWithLink"></a>
+### Emitter#publishWithLink(link, message)
 
+```
+instance.publishWithLink("a0",
+                         "Hello Emitter!")
+```
+Sends a mesage through the link.
+
+* `link` is the 2-character name of the link. (Required | `Str`)
+* `message` is the message to send through the link. (Required | `Str`)
+-------------------------------------------------------
+<a id="me"></a>
+### Emitter#me()
+
+```
+instance.me()
+```
+Requests information about the connection.
 -------------------------------------------------------
 <a id="message"></a>
 ### EmitterMessage()
@@ -309,7 +338,7 @@ Returns the payload as a raw binary buffer.
 
 There are some points where the Python libary can be improved:
 - Complete the [presence](#client-presence) and [keygen](#client-keygen) entries in the README (see the **ToDo** markings)
-- Add more features to reach the same feature set as the JavaScript libary (`username` in presence; Emitter#me() function)
+- Add more features to reach the same feature set as the JavaScript libary (`username` in presence)
 
 
 <a id="license"></a>

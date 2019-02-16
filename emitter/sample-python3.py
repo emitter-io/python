@@ -48,7 +48,7 @@ def link():
 	strKey = emitterKey.get()
 	strChannel = channel.get()
 	strLink = shortcut.get()
-	emitter.link(strKey, strChannel, strLink, False, True, me=False)
+	emitter.link(strKey, strChannel, strLink, False, True)
 
 def linkPrivate():
 	strKey = emitterKey.get()
