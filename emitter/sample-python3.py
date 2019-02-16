@@ -30,20 +30,20 @@ def unsubscribe():
 	strKey = emitterKey.get()
 	strChannel = channel.get()
 	emitter.unsubscribe(strKey, strChannel)
-	resultText.insert("0.0", "Unsubscribtion to '" + strChannel + "' requested.\n\n")    
+	resultText.insert("0.0", "Unsubscribtion to '" + strChannel + "' requested.\n\n")
 
 def presence():
 	strKey = emitterKey.get()
 	strChannel = channel.get()
 	emitter.presence(strKey, strChannel)
-	resultText.insert("0.0", "Presence on '" + strChannel + "' requested.\n\n")   
+	resultText.insert("0.0", "Presence on '" + strChannel + "' requested.\n\n")
 
 def message():
 	strKey = emitterKey.get()
 	strChannel = channel.get()
 	emitter.publish(strKey, strChannel, json.dumps({"key1": "value1", "key2": 2}))
-	resultText.insert("0.0", "Test message send through '" + strChannel + "'.\n\n") 
-	
+	resultText.insert("0.0", "Test message send through '" + strChannel + "'.\n\n")
+
 def link():
 	strKey = emitterKey.get()
 	strChannel = channel.get()
@@ -64,7 +64,7 @@ def me():
 	emitter.me()
 
 root = tkinter.Tk()
-emitterKey = tkinter.StringVar(root, value="5xwvQ9CsH-DYx-P7aR2AzRddQIWYD94S")
+emitterKey = tkinter.StringVar(root, value="5xZjIQp6GA9fpxso1Kslqnv8d4XVWCha")
 #emitterKey = tkinter.StringVar(root, value="EckDAy4LHt_T0eTPSBK_0dmOAGhakMgI")#local
 channel = tkinter.StringVar(root, value="test/")
 shortcut = tkinter.StringVar(root, value="a0")
