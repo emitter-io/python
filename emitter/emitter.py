@@ -93,7 +93,9 @@ class Emitter(object):
 		* Formats a channel for emitter.io protocol.
 		"""
 		# Prefix with the key.
-		formatted = key + channel if key.endswith("/") else key + "/" + channel
+		formatted = channel
+		if key and len(key):
+			formatted = key + channel if key.endswith("/") else key + "/" + channel	
 
 		# Add trailing slash.
 		if not formatted.endswith("/"):
@@ -263,9 +265,8 @@ class Emitter(object):
 		else:
 			options["me"] = 0
 
-		#TODO OPTIONS!
-		#topic = self._formatChannel(, channel, options)
-		request = {"key": key, "channel": channel, "name": name, "private": private, "subscribe": subscribe}
+		formattedChannel = self._formatChannel(None, channel, options)
+		request = {"key": key, "channel": formattedChannel, "name": name, "private": private, "subscribe": subscribe}
 		
 		# Publish the request.
 		self._mqtt.publish("emitter/link/", json.dumps(request))

@@ -4,3 +4,4 @@ emitter_io.egg-info
 
 *.pyc
 .vs/
+.pytest_cache/
