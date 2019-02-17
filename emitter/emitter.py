@@ -254,6 +254,9 @@ class Emitter(object):
 		self._mqtt.publish("emitter/keygen/", json.dumps(request))
 
 	def link(self, key, channel, name, private, subscribe, ttl=None, me=True):
+		"""
+		* Sends a link creation request to the server.
+		"""
 		options = {}
 		if ttl is not None:
 			options["ttl"] = str(ttl)
@@ -272,10 +275,16 @@ class Emitter(object):
 		self._mqtt.publish("emitter/link/", json.dumps(request))
 
 	def publishWithLink(self, link, message):
+		"""
+		* Sends a message through the link.
+		"""
 		# Publish the request.
 		self._mqtt.publish(link, message)
 
 	def me(self):
+		"""
+		* Requests information about the connection.
+		"""
 		self._mqtt.publish("emitter/me/", "")
 
 
