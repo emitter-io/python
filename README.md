@@ -1,6 +1,6 @@
 # Emitter Python SDK
 
-[![PyPI - Emitter version](https://img.shields.io/pypi/v/emitter-io.svg?style=flat-square)](https://pypi.org/project/emitter-io) [![PyPI - Python versions](https://img.shields.io/pypi/pyversions/emitter-io.svg?logo=python&style=flat-square)](https://github.com/emitter-io/python) [![GitHub - License](https://img.shields.io/github/license/emitter-io/python.svg?style=flat-square)](https://github.com/emitter-io/python/blob/master/LICENSE)
+[![PyPI - Emitter version](https://img.shields.io/pypi/v/emitter-io.svg)](https://pypi.org/project/emitter-io) [![PyPI - Python versions](https://img.shields.io/pypi/pyversions/emitter-io.svg?logo=python)](https://github.com/emitter-io/python) [![GitHub - License](https://img.shields.io/github/license/emitter-io/python.svg)](https://github.com/emitter-io/python/blob/master/LICENSE)
 
 This repository contains a Python client for [Emitter](https://emitter.io) (see also [Emitter GitHub](https://github.com/emitter-io/emitter)). Emitter is an **open-source** real-time communication service for connecting online devices. At its core, emitter.io is a distributed, scalable and fault-tolerant publish-subscribe messaging platform based on MQTT protocol and featuring message storage.
 
@@ -254,6 +254,7 @@ instance.keygen("Z5auMQhNr0eVnGBAgWThXus1dgtSsvuQ",
 Sends a key generation request to the server. See also [`Emitter`](#client-keygen) for a description of the event and [`Emitter#on()`](#on) for the possibilities of event handling.
 * `key` is your *master key* to use for the operation. (Required | `Str`)
 * `channel` is the channel name to generate a key for. (Required | `Str`)
+
 -------------------------------------------------------
 <a id="link"></a>
 ### Emitter#link(key, channel, shortcut, private, subscribe, ttl=None, me=True)
@@ -268,15 +269,15 @@ instance.link("5xZjIQp6GA9fpxso1Kslqnv8d4XVWChb",
               me=False)
 ```
 Sends a link creation request to the server. This allows for the creation of a link between a short 2-character name and an actual channel. This function also allows the creation of a private channel. For more information, see 
-[Emitter: Simplify Client/Server and IoT Apps with Links and Private Links](https://www.youtube.com/watch?v=_FgKiUlEb_s).
+[Emitter: Simplify Client/Server and IoT Apps with Links and Private Links (on YouTube)](https://youtu.be/_FgKiUlEb_s) and the [Emitter Pull Request (on GitHub)](https://github.com/emitter-io/emitter/pull/183).
 * `key` is the key to the channel. (Required | `Str`)
 * `channel` is the channel name. (Required | `Str`)
 * `shortcut` is the short name for the channel. (Required | `Str`)
 * `private` whether the request is for a private channel. (Required | `Bool`)
 * `subscribe` whether or not to subscribe to the channel. (Required | `Bool`)
-* `ttl` is the time to live of each message that will be sent through the link. (Optional | `Int`)
-* `me` wether or not to receive your own messages sent through the link. (Optional | `Bool`)
-* 
+* `ttl` is the time to live of each message that will be sent through the link. (Optional | `Int` | Default: `None`)
+* `me` determines whether the publisher wants to receive his own message sent through the link. When `False` the message will be sent to all subscribers except the one publishing. (Optional | `Bool` | Default: `True`)
+
 -------------------------------------------------------
 <a id="publishWithLink"></a>
 ### Emitter#publishWithLink(link, message)
@@ -285,10 +286,10 @@ Sends a link creation request to the server. This allows for the creation of a l
 instance.publishWithLink("a0",
                          "Hello Emitter!")
 ```
-Sends a mesage through the link.
-
+Sends a message through the link.
 * `link` is the 2-character name of the link. (Required | `Str`)
 * `message` is the message to send through the link. (Required | `Str`)
+
 -------------------------------------------------------
 <a id="me"></a>
 ### Emitter#me()
@@ -297,6 +298,7 @@ Sends a mesage through the link.
 instance.me()
 ```
 Requests information about the connection.
+
 -------------------------------------------------------
 <a id="message"></a>
 ### EmitterMessage()
