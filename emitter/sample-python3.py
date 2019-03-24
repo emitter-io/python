@@ -2,59 +2,63 @@ import emitter
 import tkinter
 import json
 
-emitter = emitter.Emitter()
+emitter = emitter.Client()
 
 def connect():
 	#options = {"host": "192.168.0.4", "secure": False}
 	options = {"secure": False}
 	emitter.connect(options)
-	emitter.on("connect", lambda: resultText.insert("0.0", "Connected\n\n"))
-	emitter.on("disconnect", lambda: resultText.insert("0.0", "Disconnected\n\n"))
-	emitter.on("presence", lambda p: resultText.insert("0.0", "Presence message: '" + str(p) + "'\n\n"))
-	emitter.on("message", lambda m: resultText.insert("0.0", "Message received on " + m.channel + ": " + m.asString() + "\n\n"))
-	emitter.on("error", lambda e: resultText.insert("0.0", "Error received: " + str(e) + "\n\n"))
-	emitter.on("me", lambda me: resultText.insert("0.0", "Information about Me received: " + str(me) +"\n\n"))
-	emitter.loopStart()
+
+	def m(m):
+		result_text.insert("0.0", "Message received on " + m.channel + ": " + m.asString() + "\n\n")
+
+	emitter.on_connect = lambda: result_text.insert("0.0", "Connected\n\n")
+	emitter.on_disconnect = lambda: result_text.insert("0.0", "Disconnected\n\n")
+	emitter.on_presence = lambda p: result_text.insert("0.0", "Presence message: '" + str(p) + "'\n\n")
+	emitter.on_message = m#lambda m: result_text.insert("0.0", "Message received on " + m.channel + ": " + m.asString() + "\n\n")
+	emitter.on_error = lambda e: result_text.insert("0.0", "Error received: " + str(e) + "\n\n")
+	emitter.on_me = lambda me: result_text.insert("0.0", "Information about Me received: " + str(me) +"\n\n")
+	emitter.loop_start()
 
 def disconnect():
-	emitter.loopStop()
+	emitter.loop_stop()
 	emitter.disconnect()
 
 def subscribe():
-	strKey = emitterKey.get()
-	strChannel = channel.get()
-	emitter.subscribe(strKey, strChannel)
-	resultText.insert("0.0", "Subscribtion to '" + strChannel + "' requested.\n\n")
+	str_key = emitter_key.get()
+	str_channel = channel.get()
+	emitter.subscribe(str_key, str_channel)
+	result_text.insert("0.0", "Subscribtion to '" + str_channel + "' requested.\n\n")
 
 def unsubscribe():
-	strKey = emitterKey.get()
-	strChannel = channel.get()
-	emitter.unsubscribe(strKey, strChannel)
-	resultText.insert("0.0", "Unsubscribtion to '" + strChannel + "' requested.\n\n")
+	str_key = emitter_key.get()
+	str_channel = channel.get()
+	emitter.unsubscribe(str_key, str_channel)
+	result_text.insert("0.0", "Unsubscribtion to '" + str_channel + "' requested.\n\n")
 
 def presence():
-	strKey = emitterKey.get()
-	strChannel = channel.get()
-	emitter.presence(strKey, strChannel)
-	resultText.insert("0.0", "Presence on '" + strChannel + "' requested.\n\n")
+	str_key = emitter_key.get()
+	str_channel = channel.get()
+	emitter.presence(str_key, str_channel)
+	result_text.insert("0.0", "Presence on '" + str_channel + "' requested.\n\n")
 
 def message():
-	strKey = emitterKey.get()
-	strChannel = channel.get()
-	emitter.publish(strKey, strChannel, json.dumps({"key1": "value1", "key2": 2}))
-	resultText.insert("0.0", "Test message send through '" + strChannel + "'.\n\n")
+	str_key = emitter_key.get()
+	str_channel = channel.get()
+	emitter.publish(str_key, str_channel, json.dumps({"key1": "value1", "key2": 2}))
+	result_text.insert("0.0", "Test message send through '" + str_channel + "'.\n\n")
 
 def link():
-	strKey = emitterKey.get()
-	strChannel = channel.get()
+	str_key = emitter_key.get()
+	str_channel = channel.get()
 	strLink = shortcut.get()
-	emitter.link(strKey, strChannel, strLink, False, True)
+	emitter.link(str_key, str_channel, strLink, False, True)
 
 def linkPrivate():
-	strKey = emitterKey.get()
-	strChannel = channel.get()
+	str_key = emitter_key.get()
+	str_channel = channel.get()
 	strLink = shortcut.get()
-	emitter.link(strKey, strChannel, strLink, True, True)
+	emitter.link(str_key, str_channel, strLink, True, True)
 
 def pubToLink():
 	strLink = shortcut.get()
@@ -64,15 +68,15 @@ def me():
 	emitter.me()
 
 root = tkinter.Tk()
-emitterKey = tkinter.StringVar(root, value="5xZjIQp6GA9fpxso1Kslqnv8d4XVWCha")
-#emitterKey = tkinter.StringVar(root, value="EckDAy4LHt_T0eTPSBK_0dmOAGhakMgI")#local
+emitter_key = tkinter.StringVar(root, value="5xZjIQp6GA9fpxso1Kslqnv8d4XVWCha")
+#emitter_key = tkinter.StringVar(root, value="EckDAy4LHt_T0eTPSBK_0dmOAGhakMgI")#local
 channel = tkinter.StringVar(root, value="test/")
 shortcut = tkinter.StringVar(root, value="a0")
 
 # Col 1
 tkinter.Label(root, text="Emitter key : ").grid(column=1, row=1)
-emitterKeyEntry = tkinter.Entry(root, width=40, textvariable=emitterKey)
-emitterKeyEntry.grid(column=1, row=2)
+emitter_keyEntry = tkinter.Entry(root, width=40, textvariable=emitter_key)
+emitter_keyEntry.grid(column=1, row=2)
 
 tkinter.Label(root, text="Channel : ").grid(column=1, row=3)
 channelEntry = tkinter.Entry(root, width=40, textvariable=channel)
@@ -115,7 +119,7 @@ presenceButton.grid(column=4, row=1)
 meButton = tkinter.Button(root, text="Me", width=30, command=me)
 meButton.grid(column=4, row=2)
 
-resultText = tkinter.Text(root, height=30, width=120)
-resultText.grid(column=1, row=8, columnspan=4)
+result_text = tkinter.Text(root, height=30, width=120)
+result_text.grid(column=1, row=8, columnspan=4)
 
 root.mainloop()

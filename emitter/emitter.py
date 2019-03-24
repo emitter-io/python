@@ -10,6 +10,7 @@ import logging
 import re
 import ssl
 import paho.mqtt.client as mqtt
+import subtrie
 
 try:
 	from urllib.parse import urlencode
@@ -17,17 +18,20 @@ except ImportError:
 	from urllib import urlencode
 
 
-class Emitter(object):
+class Client(object):
 	"""
 	* Represents the client connection to an Emitter server.
 	"""
 
 	def __init__(self):
 		"""
-		* Registrate the variables for later use.
+		* Register the variables for later use.
 		"""
 		self._mqtt = None
-		self._callbacks = {}
+		self._handlers = subtrie.SubTrie()
+		self.handler_connect = None
+		#self._on_disconnect = None
+
 
 	def loop(self, timeout):
 		"""
@@ -40,14 +44,14 @@ class Emitter(object):
 		"""
 		self._mqtt.loop(timeout=timeout)
 
-	def loopForever(self):
+	def loop_forever(self):
 		"""
 		* This is a blocking form of the network loop and will not return until the
 		* client calls disconnect(). It automatically handles reconnecting.
 		"""
 		self._mqtt.loop_forever()
 
-	def loopStart(self):
+	def loop_start(self):
 		"""
 		* These functions implement a threaded interface to the network loop.
 		* Calling loop_start() once, before or after connect*(), runs a thread in
@@ -57,25 +61,52 @@ class Emitter(object):
 		"""
 		self._mqtt.loop_start()
 
-	def loopStop(self):
+	def loop_stop(self):
 		"""
 		* Stops the loop started in loopStart().
 		* See loopStart() for more information.
 		"""
 		self._mqtt.loop_stop()
 
-	def _onConnect(self, client, userdata, flags, rc):
+
+	def _on_connect(self, client, userdata, flags, rc):
 		"""
 		* Occurs when connection is established.
 		"""
-		self._tryInvoke("connect")
+		#self._tryInvoke("connect")
+		if self.handler_connect:
+			self.handler_connect()
+		
 
-	def _onDisconnect(self, client, userdata, rc):
+	def _on_disconnect(self, client, userdata, rc):
 		"""
 		* Occurs when the connection was lost.
 		"""
-		self._tryInvoke("disconnect")
+		#self._tryInvoke("disconnect")
+		self.on_disconnect()
 
+	def _on_message(self, client, userdata, msg):
+		message = EmitterMessage(msg)
+		
+		# Non-emitter messages are far more frequent, so if it is one, return earlier.
+		if (not message.channel.startswith("emitter")):
+			self.on_message(message)
+			return
+
+		if message.channel.startswith("emitter/keygen"):
+			# This is a keygen message.
+			self.on_keygen(message.asObject())
+		elif message.channel.startswith("emitter/presence"):
+			# This is a presence message.
+			self.on_presence(message.asObject())
+		elif message.channel.startswith("emitter/error"):
+			# This is an error message.
+			self.on_error(message.asObject())
+		elif message.channel.startswith("emitter/me"):
+			# This is a "me" message, giving information about the connection.
+			self.on_me(message.asObject())
+	
+	'''
 	def _tryInvoke(self, name, args=None):
 		"""
 		* Invokes the callback with a specific
@@ -86,6 +117,34 @@ class Emitter(object):
 			else:
 				self._callbacks[name](args)
 			return
+	'''
+
+	@property
+	def on_connect(self):
+		return self.handler_connect
+	@on_connect.setter
+	def on_connect(self, func):
+		self.handler_connect = func
+
+	def on_disconnect(self):
+		pass
+
+	def on_error(self, msg):
+		pass
+
+	def on_presence(self, msg):
+		pass
+
+	def on_me(self, msg):
+		pass
+
+	def on_keygen(self, msg):
+		pass
+
+	def on_message(self, msg):
+		pass
+
+	
 
 	@staticmethod
 	def _formatChannel(key, channel, options=None):
@@ -113,25 +172,6 @@ class Emitter(object):
 		"""
 		* Connects to an Emitter server.
 		"""
-
-		def processMsg(client, userdata, msg):
-			message = EmitterMessage(msg)
-			if message.channel.startswith("emitter/keygen"):
-				# This is a keygen message.
-				self._tryInvoke("keygen", message.asObject())
-			elif message.channel.startswith("emitter/presence"):
-				# This is a presence message.
-				self._tryInvoke("presence", message.asObject())
-			elif message.channel.startswith("emitter/error"):
-				# This is an error message.
-				self._tryInvoke("error", message.asObject())
-			elif message.channel.startswith("emitter/me"):
-				# This is a "me" message, giving information about the connection.
-				self._tryInvoke("me", message.asObject())
-			else:
-				# This is a text message.
-				self._tryInvoke("message", message)
-
 		# Default options.
 		if "secure" not in options:
 			options["secure"] = True
@@ -152,9 +192,9 @@ class Emitter(object):
 			ssl_ctx = ssl.create_default_context()
 			self._mqtt.tls_set_context(ssl_ctx)
 
-		self._mqtt.on_connect = self._onConnect
-		self._mqtt.on_disconnect = self._onDisconnect
-		self._mqtt.on_message = processMsg
+		self._mqtt.on_connect = self._on_connect
+		self._mqtt.on_disconnect = self._on_disconnect
+		self._mqtt.on_message = self._on_message
 
 		self._mqtt.connect(options["host"], port=options["port"], keepalive=options["keepalive"])
 
@@ -215,6 +255,8 @@ class Emitter(object):
 		"""
 		self._mqtt.disconnect()
 
+
+	'''
 	def on(self, event, callback):
 		"""
 		* Registers a callback for different events.
@@ -226,6 +268,7 @@ class Emitter(object):
 
 		# Set the callback.
 		self._callbacks[event] = callback
+	'''
 
 	def presence(self, key, channel):
 		"""
