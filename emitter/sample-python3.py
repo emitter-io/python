@@ -10,7 +10,7 @@ def connect():
 	emitter.connect(options)
 
 	def m(m):
-		result_text.insert("0.0", "Message received on " + m.channel + ": " + m.asString() + "\n\n")
+		result_text.insert("0.0", "Message received on " + m.channel + ": " + m.as_string() + "\n\n")
 
 	emitter.on_connect = lambda: result_text.insert("0.0", "Connected\n\n")
 	emitter.on_disconnect = lambda: result_text.insert("0.0", "Disconnected\n\n")

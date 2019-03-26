@@ -28,9 +28,13 @@ class Client(object):
 		* Register the variables for later use.
 		"""
 		self._mqtt = None
-		self._handlers = subtrie.SubTrie()
-		self.handler_connect = None
-		#self._on_disconnect = None
+		self._handler_trie = subtrie.SubTrie()
+		self._handler_connect = None
+		self._handler_disconnect = None
+		self._handler_error = None
+		self._handler_presence = None
+		self._handler_me = None
+		self._handler_keygen = None
 
 
 	def loop(self, timeout):
@@ -74,8 +78,8 @@ class Client(object):
 		* Occurs when connection is established.
 		"""
 		#self._tryInvoke("connect")
-		if self.handler_connect:
-			self.handler_connect()
+		if self._handler_connect:
+			self._handler_connect()
 		
 
 	def _on_disconnect(self, client, userdata, rc):
@@ -83,7 +87,8 @@ class Client(object):
 		* Occurs when the connection was lost.
 		"""
 		#self._tryInvoke("disconnect")
-		self.on_disconnect()
+		if self._handler_disconnect:
+			self._handler_disconnect()
 
 	def _on_message(self, client, userdata, msg):
 		message = EmitterMessage(msg)
@@ -93,18 +98,21 @@ class Client(object):
 			self.on_message(message)
 			return
 
-		if message.channel.startswith("emitter/keygen"):
+		if self._handler_keygen and message.channel.startswith("emitter/keygen"):
 			# This is a keygen message.
-			self.on_keygen(message.asObject())
-		elif message.channel.startswith("emitter/presence"):
+			self._handler_keygen(message.as_object())
+
+		elif self._handler_presence and message.channel.startswith("emitter/presence"):
 			# This is a presence message.
-			self.on_presence(message.asObject())
-		elif message.channel.startswith("emitter/error"):
+			self._handler_presence(message.as_object())
+
+		elif self._handler_error and message.channel.startswith("emitter/error"):
 			# This is an error message.
-			self.on_error(message.asObject())
-		elif message.channel.startswith("emitter/me"):
+			self._handler_error(message.as_object())
+
+		elif self._handler_me and message.channel.startswith("emitter/me"):
 			# This is a "me" message, giving information about the connection.
-			self.on_me(message.asObject())
+			self._handler_me(message.as_object())
 	
 	'''
 	def _tryInvoke(self, name, args=None):
@@ -121,28 +129,52 @@ class Client(object):
 
 	@property
 	def on_connect(self):
-		return self.handler_connect
+		return self._handler_connect
 	@on_connect.setter
 	def on_connect(self, func):
-		self.handler_connect = func
+		self._handler_connect = func
 
+	@property
 	def on_disconnect(self):
-		pass
+		return self._handler_disconnect
+	@on_disconnect.setter
+	def on_disconnect(self, func):
+		self._handler_disconnect = func
 
-	def on_error(self, msg):
-		pass
+	@property
+	def on_error(self):
+		return self._handler_error
+	@on_error.setter
+	def on_error(self, func):
+		self._handler_error = func
 
-	def on_presence(self, msg):
-		pass
+	@property
+	def on_presence(self):
+		return self._handler_presence
+	@on_presence.setter
+	def on_presence(self, func):
+		self._handler_presence = func
 
-	def on_me(self, msg):
-		pass
+	@property
+	def on_me(self):
+		return self._handler_me
+	@on_me.setter
+	def on_me(self, func):
+		self._handler_me = func
 
-	def on_keygen(self, msg):
-		pass
+	@property
+	def on_keygen(self):
+		return self._handler_keygen
+	@on_keygen.setter
+	def on_keygen(self, func):
+		self._handler_keygen = func
 
-	def on_message(self, msg):
-		pass
+	@property
+	def on_message(self):
+		return self._handler_message
+	@on_message.setter
+	def on_message(self, func):
+		self._handler_message = func
 
 	
 
@@ -343,13 +375,13 @@ class EmitterMessage(object):
 		self.channel = message.topic
 		self.binary = message.payload
 
-	def asString(self):
+	def as_string(self):
 		"""
 		* Returns the payload as a utf-8 string.
 		"""
 		return str(self.binary)
 
-	def asObject(self):
+	def as_object(self):
 		"""
 		* Returns the payload as an JSON-deserialized Python object.
 		"""
@@ -361,7 +393,7 @@ class EmitterMessage(object):
 
 		return msg
 
-	def asBinary(self):
+	def as_binary(self):
 		"""
 		* Returns the payload as a raw binary buffer.
 		"""
