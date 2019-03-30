@@ -9,13 +9,10 @@ def connect():
 	options = {"secure": False}
 	emitter.connect(options)
 
-	def m(m):
-		result_text.insert("0.0", "Message received on default handler, destined to " + m.channel + ": " + m.as_string() + "\n\n")
-
 	emitter.on_connect = lambda: result_text.insert("0.0", "Connected\n\n")
 	emitter.on_disconnect = lambda: result_text.insert("0.0", "Disconnected\n\n")
 	emitter.on_presence = lambda p: result_text.insert("0.0", "Presence message: '" + str(p) + "'\n\n")
-	emitter.on_message = m#lambda m: result_text.insert("0.0", "Message received on " + m.channel + ": " + m.asString() + "\n\n")
+	emitter.on_message = lambda m: result_text.insert("0.0", "Message received on default handler, destined to " + m.channel + ": " + m.as_string() + "\n\n")
 	emitter.on_error = lambda e: result_text.insert("0.0", "Error received: " + str(e) + "\n\n")
 	emitter.on_me = lambda me: result_text.insert("0.0", "Information about Me received: " + str(me) +"\n\n")
 	emitter.loop_start()

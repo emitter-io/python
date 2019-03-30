@@ -77,7 +77,6 @@ class Client(object):
 		"""
 		* Occurs when connection is established.
 		"""
-		#self._tryInvoke("connect")
 		if self._handler_connect:
 			self._handler_connect()
 		
@@ -86,7 +85,6 @@ class Client(object):
 		"""
 		* Occurs when the connection was lost.
 		"""
-		#self._tryInvoke("disconnect")
 		if self._handler_disconnect:
 			self._handler_disconnect()
 
@@ -252,9 +250,6 @@ class Client(object):
 		if not isinstance(channel, str):
 			logging.error("emitter.publish: request object does not contain a 'channel' string.")
 
-		#if last is not None:
-		#	options["last"] = str(last)
-
 		if optional_handler is not None:
 			self._handler_trie.insert(channel, optional_handler)
 
@@ -279,21 +274,6 @@ class Client(object):
 		* Disconnects from the connected Emitter server.
 		"""
 		self._mqtt.disconnect()
-
-
-	'''
-	def on(self, event, callback):
-		"""
-		* Registers a callback for different events.
-		"""
-		# Validate the type.
-		if event not in ["connect", "disconnect", "message", "keygen", "presence", "me", "error"]:
-			logging.error("emitter.on: unknown event type, supported values are 'connect', 'disc" \
-						  "onnect', 'message', 'keygen', 'presence', 'me', and 'error'.")
-
-		# Set the callback.
-		self._callbacks[event] = callback
-	'''
 
 	def presence(self, key, channel):
 		"""
