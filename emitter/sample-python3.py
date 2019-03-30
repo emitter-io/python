@@ -62,7 +62,7 @@ def link_private():
 
 def pub_to_link():
 	str_link = shortcut.get()
-	emitter.publishWithLink(str_link, json.dumps({"key1": "value1", "key2": 2}))
+	emitter.publish_with_link(str_link, json.dumps({"key1": "value1", "key2": 2}))
 
 def me():
 	emitter.me()

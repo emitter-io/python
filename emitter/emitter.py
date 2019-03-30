@@ -342,7 +342,7 @@ class Client(object):
 		# Publish the request.
 		self._mqtt.publish("emitter/link/", json.dumps(request))
 
-	def publishWithLink(self, link, message):
+	def publish_with_link(self, link, message):
 		"""
 		* Sends a message through the link.
 		"""
