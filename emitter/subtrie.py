@@ -10,16 +10,16 @@ class SubTrie:
         self.root = SubTrieNode(None, None, None)
 
     @staticmethod
-    def _getWords(topic):
+    def _get_words(topic):
         return filter(None, topic.split("/"))
     
     def insert(self, topic, handler):
-        curNode = self.root
-        for word in self._getWords(topic):
-            if word not in curNode.children:
-                curNode.children[word] = SubTrieNode(curNode, word, None)
-            curNode = curNode.children[word]
-        curNode.handler = handler
+        cur_node = self.root
+        for word in self._get_words(topic):
+            if word not in cur_node.children:
+                cur_node.children[word] = SubTrieNode(cur_node, word, None)
+            cur_node = cur_node.children[word]
+        cur_node.handler = handler
 
     def _lookup(self, route, children):
         handlers = []
@@ -40,32 +40,20 @@ class SubTrie:
         return handlers
 
     def lookup(self, topic):
-        route = list(self._getWords(topic))
+        route = list(self._get_words(topic))
         return self._lookup(route, self.root.children)
     
     def delete(self, topic):
-        curNode = self.root
-        for word in self._getWords(topic):
-            if word not in curNode.children:
+        cur_node = self.root
+        for word in self._get_words(topic):
+            if word not in cur_node.children:
                 return
-            curNode = curNode.children[word]
+            cur_node = cur_node.children[word]
 
-        curNode.handler = None
+        cur_node.handler = None
         
-        while curNode != self.root and curNode.handler == None and len(curNode.children) == 0:
-            del curNode.parent.children[curNode.word]
-            curNode = curNode.parent
+        while cur_node != self.root and cur_node.handler == None and len(cur_node.children) == 0:
+            del cur_node.parent.children[cur_node.word]
+            cur_node = cur_node.parent
 
         return
-
-
-t = SubTrie()
-t.insert("a/", lambda: print("Handler a"))
-t.insert("a/b/c/", lambda: print("Handler a/b/c"))
-t.insert("a/+/c/", lambda: print("Handler a/+/c"))
-
-results = t.lookup("a/b/c")
-print(len(results))
-
-for r in results:
-    r()

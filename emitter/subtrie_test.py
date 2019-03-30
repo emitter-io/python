@@ -1,7 +1,8 @@
 import pytest
-from .subtrie import SubTrie
+from subtrie import SubTrie
 
-def test_lookupWithWildcard():
+
+def test_lookup_with_wildcard():
     t = SubTrie()
     t.insert("a/", lambda: None)
     t.insert("a/b/c/", lambda: None)
@@ -30,7 +31,7 @@ def test_lookupWithWildcard():
         assert len(results) == v
 
 
-def test_deleteParent():
+def test_delete_parent():
     t = SubTrie()
     t.insert("a", lambda: None)
     t.insert("a/b/c", lambda: None)
@@ -47,7 +48,7 @@ def test_deleteParent():
     results = t.lookup("a/b/c")
     assert len(results) == 2
 
-def test_deleteChild():
+def test_delete_child():
     t = SubTrie()
     t.insert("a", lambda: None)
     t.insert("a/b", lambda: None)
@@ -59,3 +60,23 @@ def test_deleteChild():
 
     results = t.lookup("a/b")
     assert len(results) == 1
+
+def test_delete_inexistant_child():
+    t = SubTrie()
+    t.insert("a", lambda: None)
+    t.insert("a/b", lambda: None)
+
+    t.delete("c")
+
+    results = t.lookup("a/b")
+    assert len(results) == 2
+
+
+def test_delete_root_child():
+    t = SubTrie()
+    t.insert("a", lambda: None)
+
+    t.delete("a")
+
+    results = t.lookup("a")
+    assert len(results) == 0
