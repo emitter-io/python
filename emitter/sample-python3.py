@@ -70,7 +70,7 @@ def me():
 	emitter.me()
 
 root = tkinter.Tk()
-emitter_key = tkinter.StringVar(root, value="5xZjIQp6GA9fpxso1Kslqnv8d4XVWCha")
+emitter_key = tkinter.StringVar(root, value="8jMLP9F859oDyqmJ3aV4aqnmFZpxApvb")
 #emitter_key = tkinter.StringVar(root, value="EckDAy4LHt_T0eTPSBK_0dmOAGhakMgI")#local
 channel = tkinter.StringVar(root, value="test/")
 shortcut = tkinter.StringVar(root, value="a0")

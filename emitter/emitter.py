@@ -95,7 +95,12 @@ class Client(object):
 		
 		# Non-emitter messages are far more frequent, so if it is one, return earlier.
 		if (not message.channel.startswith("emitter")):
-			self.on_message(message)
+			handlers = self._handler_trie.lookup(message.channel)
+			if len(handlers) == 0 and self.on_message:
+				self.on_message(message)
+
+			for h in handlers:
+				h(message)
 			return
 
 		if self._handler_keygen and message.channel.startswith("emitter/keygen"):
