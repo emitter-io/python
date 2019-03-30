@@ -10,7 +10,7 @@ import logging
 import re
 import ssl
 import paho.mqtt.client as mqtt
-import subtrie
+from subtrie import SubTrie
 
 try:
 	from urllib.parse import urlencode
@@ -28,7 +28,7 @@ class Client(object):
 		* Register the variables for later use.
 		"""
 		self._mqtt = None
-		self._handler_trie = subtrie.SubTrie()
+		self._handler_trie = SubTrie()
 		self._handler_connect = None
 		self._handler_disconnect = None
 		self._handler_error = None
@@ -114,19 +114,6 @@ class Client(object):
 			# This is a "me" message, giving information about the connection.
 			self._handler_me(message.as_object())
 	
-	'''
-	def _tryInvoke(self, name, args=None):
-		"""
-		* Invokes the callback with a specific
-		"""
-		if name in self._callbacks and self._callbacks[name] is not None:
-			if args is None:
-				self._callbacks[name]()
-			else:
-				self._callbacks[name](args)
-			return
-	'''
-
 	@property
 	def on_connect(self):
 		return self._handler_connect
@@ -176,10 +163,8 @@ class Client(object):
 	def on_message(self, func):
 		self._handler_message = func
 
-	
-
 	@staticmethod
-	def _formatChannel(key, channel, options=None):
+	def _format_channel(key, channel, options=None):
 		"""
 		* Formats a channel for emitter.io protocol.
 		"""
@@ -250,10 +235,10 @@ class Client(object):
 		else:
 			options["me"] = 0
 
-		topic = self._formatChannel(key, channel, options)
+		topic = self._format_channel(key, channel, options)
 		self._mqtt.publish(topic, message)
 
-	def subscribe(self, key, channel, last=None):
+	def subscribe(self, key, channel, optional_handler=None, options={}):
 		"""
 		* Subscribes to a particual channel.
 		"""
@@ -262,11 +247,13 @@ class Client(object):
 		if not isinstance(channel, str):
 			logging.error("emitter.publish: request object does not contain a 'channel' string.")
 
-		options = {}
-		if last is not None:
-			options["last"] = str(last)
+		#if last is not None:
+		#	options["last"] = str(last)
 
-		topic = self._formatChannel(key, channel, options)
+		if optional_handler is not None:
+			self._handler_trie.insert(channel, optional_handler)
+
+		topic = self._format_channel(key, channel, options)
 		self._mqtt.subscribe(topic)
 
 	def unsubscribe(self, key, channel):
@@ -278,7 +265,8 @@ class Client(object):
 		if not isinstance(channel, str):
 			logging.error("emitter.publish: request object does not contain a 'channel' string.")
 
-		topic = self._formatChannel(key, channel)
+		self._handler_trie.delete(channel)
+		topic = self._format_channel(key, channel)
 		self._mqtt.unsubscribe(topic)
 
 	def disconnect(self):
@@ -343,7 +331,7 @@ class Client(object):
 		else:
 			options["me"] = 0
 
-		formattedChannel = self._formatChannel(None, channel, options)
+		formattedChannel = self._format_channel(None, channel, options)
 		request = {"key": key, "channel": formattedChannel, "name": name, "private": private, "subscribe": subscribe}
 
 		# Publish the request.

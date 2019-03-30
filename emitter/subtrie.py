@@ -9,7 +9,8 @@ class SubTrie:
     def __init__(self):
         self.root = SubTrieNode(None, None, None)
 
-    def _getWords(self, topic):
+    @staticmethod
+    def _getWords(topic):
         return filter(None, topic.split("/"))
     
     def insert(self, topic, handler):
@@ -51,7 +52,7 @@ class SubTrie:
 
         curNode.handler = None
         
-        while curNode.handler == None and len(curNode.children) == 0:
+        while curNode != self.root and curNode.handler == None and len(curNode.children) == 0:
             del curNode.parent.children[curNode.word]
             curNode = curNode.parent
 

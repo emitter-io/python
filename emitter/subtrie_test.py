@@ -1,5 +1,5 @@
 import pytest
-from subtrie import SubTrie
+from .subtrie import SubTrie
 
 def test_lookupWithWildcard():
     t = SubTrie()

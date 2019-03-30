@@ -1,8 +1,8 @@
-import emitter
+from emitter import Client
 import tkinter
 import json
 
-emitter = emitter.Client()
+emitter = Client()
 
 def connect():
 	#options = {"host": "192.168.0.4", "secure": False}
@@ -10,7 +10,7 @@ def connect():
 	emitter.connect(options)
 
 	def m(m):
-		result_text.insert("0.0", "Message received on " + m.channel + ": " + m.as_string() + "\n\n")
+		result_text.insert("0.0", "Message received on default handler, destined to " + m.channel + ": " + m.as_string() + "\n\n")
 
 	emitter.on_connect = lambda: result_text.insert("0.0", "Connected\n\n")
 	emitter.on_disconnect = lambda: result_text.insert("0.0", "Disconnected\n\n")
@@ -27,7 +27,9 @@ def disconnect():
 def subscribe():
 	str_key = emitter_key.get()
 	str_channel = channel.get()
-	emitter.subscribe(str_key, str_channel)
+	emitter.subscribe(str_key,
+	 str_channel,
+	 optional_handler=lambda m: result_text.insert("0.0", "Message received on handler for " + str_channel + ": " + m.as_string() + "\n\n"))
 	result_text.insert("0.0", "Subscribtion to '" + str_channel + "' requested.\n\n")
 
 def unsubscribe():
