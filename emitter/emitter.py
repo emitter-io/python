@@ -220,7 +220,7 @@ class Client(object):
 
 		self._mqtt.connect(options["host"], port=options["port"], keepalive=options["keepalive"])
 
-	def publish(self, key, channel, message, ttl=None, me=True):
+	def publish(self, key, channel, message, ttl=None, me=True, retain=False):
 		"""
 		* Publishes a message to a channel.
 		"""
@@ -241,7 +241,7 @@ class Client(object):
 			options["me"] = 0
 
 		topic = self._format_channel(key, channel, options)
-		self._mqtt.publish(topic, message)
+		self._mqtt.publish(topic, message, retain=retain)
 
 	def subscribe(self, key, channel, optional_handler=None, options={}):
 		"""
