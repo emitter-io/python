@@ -167,11 +167,29 @@ class Client(object):
 		self._handler_message = func
 
 	@staticmethod
-	def _format_channel(key, channel, options=None):
+	def _format_channel(channel, key=None, options=None, share_group=None):
 		"""
 		* Formats a channel for emitter.io protocol.
 		"""
-		# Prefix with the key.
+		if key and len(key):
+			if not share_group or not len(share_group):
+				formatted = "{key}/{channel}/".format(
+					key=key.strip("/"),
+					channel=channel.strip("/"))
+			else:
+				formatted = "{key}/$share/{share_group}/{channel}/".format(
+					key=key.strip("/"),
+					share_group=share_group.strip("/"),
+					channel=channel.strip("/"))
+		else:
+			formatted = channel if channel.endswith("/") else channel + "/"
+
+		if options:
+			formatted = "{formatted}?{querystring}".format(
+					formatted=formatted,
+					querystring=urlencode(options),
+				)
+		'''
 		formatted = channel
 		if key and len(key):
 			formatted = key + channel if key.endswith("/") else key + "/" + channel
@@ -186,6 +204,7 @@ class Client(object):
 				formatted=formatted,
 				querystring=urlencode(options),
 			)
+		'''
 		return formatted
 
 	def connect(self, options={}):
@@ -238,10 +257,10 @@ class Client(object):
 		else:
 			options["me"] = 0
 
-		topic = self._format_channel(key, channel, options)
+		topic = self._format_channel(channel, key, options)
 		self._mqtt.publish(topic, message, retain=retain)
 
-	def subscribe(self, key, channel, optional_handler=None, options={}):
+	def subscribe(self, key, channel, optional_handler=None, chan_options={}, share_group=None):
 		"""
 		* Subscribes to a particual channel.
 		"""
@@ -253,7 +272,7 @@ class Client(object):
 		if optional_handler is not None:
 			self._handler_trie.insert(channel, optional_handler)
 
-		topic = self._format_channel(key, channel, options)
+		topic = self._format_channel(channel, key, chan_options, share_group)
 		self._mqtt.subscribe(topic)
 
 	def unsubscribe(self, key, channel):
@@ -266,7 +285,7 @@ class Client(object):
 			logging.error("emitter.publish: request object does not contain a 'channel' string.")
 
 		self._handler_trie.delete(channel)
-		topic = self._format_channel(key, channel)
+		topic = self._format_channel(channel, key)
 		self._mqtt.unsubscribe(topic)
 
 	def disconnect(self):
@@ -316,7 +335,7 @@ class Client(object):
 		else:
 			options["me"] = 0
 
-		formattedChannel = self._format_channel(None, channel, options)
+		formattedChannel = self._format_channel(channel, options=options)
 		request = {"key": key, "channel": formattedChannel, "name": name, "private": private, "subscribe": subscribe}
 
 		# Publish the request.
