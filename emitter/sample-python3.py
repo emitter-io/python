@@ -36,8 +36,7 @@ def subscribe(share_group=None):
 	str_channel = channel.get()
 	emitter.subscribe(str_key,
 	 str_channel,
-	 optional_handler=lambda m: result_text.insert("0.0", "Message received on handler for " + str_channel + ": " + m.as_string() + "\n\n"),
-	 share_group=share_group)
+	 optional_handler=lambda m: result_text.insert("0.0", "Message received on handler for " + str_channel + ": " + m.as_string() + "\n\n"))
 	result_text.insert("0.0", "Subscribtion to '" + str_channel + "' requested.\n\n")
 
 def subscribe_share():
