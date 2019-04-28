@@ -61,7 +61,7 @@ def test_delete_child():
     results = t.lookup("a/b")
     assert len(results) == 1
 
-def test_delete_inexistant_child():
+def test_delete_inexistent_child():
     t = SubTrie()
     t.insert("a", lambda: None)
     t.insert("a/b", lambda: None)
@@ -72,7 +72,7 @@ def test_delete_inexistant_child():
     assert len(results) == 2
 
 
-def test_delete_root_child():
+def test_delete_root():
     t = SubTrie()
     t.insert("a", lambda: None)
 
