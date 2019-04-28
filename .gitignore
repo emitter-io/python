@@ -3,5 +3,5 @@ dist
 emitter_io.egg-info
 
 *.pyc
-.vs/
+.vscode/
 .pytest_cache/
