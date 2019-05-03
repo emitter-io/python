@@ -28,14 +28,15 @@ class Client(object):
 		* Register the variables for later use.
 		"""
 		self._mqtt = None
-		self._handler_trie = SubTrie()
+		self._handler_message = None
+		self._handler_trie_message = SubTrie()
 		self._handler_connect = None
 		self._handler_disconnect = None
 		self._handler_error = None
 		self._handler_presence = None
+		self._handler_trie_presence = SubTrie()
 		self._handler_me = None
 		self._handler_keygen = None
-
 
 	def loop(self, timeout):
 		"""
@@ -88,18 +89,21 @@ class Client(object):
 		if self._handler_disconnect:
 			self._handler_disconnect()
 
+	def _invoke_trie_handlers(self, trie, default_handler, message):
+		handlers = trie.lookup(message.channel)
+		if len(handlers) == 0 and default_handler:
+				default_handler(message)
+
+		for h in handlers:
+			h(message)
+		
+
 	def _on_message(self, client, userdata, msg):
 		message = EmitterMessage(msg)
 		
 		# Non-emitter messages are far more frequent, so if it is one, return earlier.
 		if (not message.channel.startswith("emitter")):
-			handlers = self._handler_trie.lookup(message.channel)
-			if len(handlers) == 0 and self._handler_message:
-				self._handler_message(message)
-
-			for h in handlers:
-				h(message)
-			return
+			self._invoke_trie_handlers(self._handler_trie_message, self._handler_message, message)
 
 		if self._handler_keygen and message.channel.startswith("emitter/keygen"):
 			# This is a keygen message.
@@ -107,7 +111,7 @@ class Client(object):
 
 		elif self._handler_presence and message.channel.startswith("emitter/presence"):
 			# This is a presence message.
-			self._handler_presence(message.as_object())
+			self._invoke_trie_handlers(self._handler_trie_presence, self._handler_presence, message)
 
 		elif self._handler_error and message.channel.startswith("emitter/error"):
 			# This is an error message.
@@ -189,22 +193,6 @@ class Client(object):
 					formatted=formatted,
 					querystring=urlencode(options),
 				)
-		'''
-		formatted = channel
-		if key and len(key):
-			formatted = key + channel if key.endswith("/") else key + "/" + channel
-
-		# Add trailing slash.
-		if not formatted.endswith("/"):
-			formatted = formatted + "/"
-
-		# Add options.
-		if options:
-			formatted = "{formatted}?{querystring}".format(
-				formatted=formatted,
-				querystring=urlencode(options),
-			)
-		'''
 		return formatted
 
 	def connect(self, options={}):
@@ -270,7 +258,7 @@ class Client(object):
 			logging.error("emitter.publish: request object does not contain a 'channel' string.")
 
 		if optional_handler is not None:
-			self._handler_trie.insert(channel, optional_handler)
+			self._handler_trie_message.insert(channel, optional_handler)
 
 		topic = self._format_channel(channel, key, chan_options, share_group)
 		self._mqtt.subscribe(topic)
@@ -284,7 +272,7 @@ class Client(object):
 		if not isinstance(channel, str):
 			logging.error("emitter.publish: request object does not contain a 'channel' string.")
 
-		self._handler_trie.delete(channel)
+		self._handler_trie_message.delete(channel)
 		topic = self._format_channel(channel, key)
 		self._mqtt.unsubscribe(topic)
 
