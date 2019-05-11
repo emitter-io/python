@@ -16,8 +16,7 @@ share_group_key = tkinter.StringVar(root, value="qQrtann17qNi3CTwW7N8F4OR9uAuQBH
 
 def connect():
 	#options = {"host": "127.0.0.1", "secure": False}
-	options = {"secure": False}
-	emitter.connect(options)
+	emitter.connect()
 
 	emitter.on_connect = lambda: result_text.insert("0.0", "Connected\n\n")
 	emitter.on_disconnect = lambda: result_text.insert("0.0", "Disconnected\n\n")

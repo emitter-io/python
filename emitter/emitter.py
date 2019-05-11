@@ -38,6 +38,55 @@ class Client(object):
 		self._handler_me = None
 		self._handler_keygen = None
 
+	@property
+	def on_connect(self):
+		return self._handler_connect
+	@on_connect.setter
+	def on_connect(self, func):
+		self._handler_connect = func
+
+	@property
+	def on_disconnect(self):
+		return self._handler_disconnect
+	@on_disconnect.setter
+	def on_disconnect(self, func):
+		self._handler_disconnect = func
+
+	@property
+	def on_error(self):
+		return self._handler_error
+	@on_error.setter
+	def on_error(self, func):
+		self._handler_error = func
+
+	@property
+	def on_presence(self):
+		return self._handler_presence
+	@on_presence.setter
+	def on_presence(self, func):
+		self._handler_presence = func
+
+	@property
+	def on_me(self):
+		return self._handler_me
+	@on_me.setter
+	def on_me(self, func):
+		self._handler_me = func
+
+	@property
+	def on_keygen(self):
+		return self._handler_keygen
+	@on_keygen.setter
+	def on_keygen(self, func):
+		self._handler_keygen = func
+
+	@property
+	def on_message(self):
+		return self._handler_message
+	@on_message.setter
+	def on_message(self, func):
+		self._handler_message = func
+
 	def loop(self, timeout):
 		"""
 		* Call regularly to process network events. This call waits in select()
@@ -121,55 +170,6 @@ class Client(object):
 			# This is a "me" message, giving information about the connection.
 			self._handler_me(message.as_object())
 	
-	@property
-	def on_connect(self):
-		return self._handler_connect
-	@on_connect.setter
-	def on_connect(self, func):
-		self._handler_connect = func
-
-	@property
-	def on_disconnect(self):
-		return self._handler_disconnect
-	@on_disconnect.setter
-	def on_disconnect(self, func):
-		self._handler_disconnect = func
-
-	@property
-	def on_error(self):
-		return self._handler_error
-	@on_error.setter
-	def on_error(self, func):
-		self._handler_error = func
-
-	@property
-	def on_presence(self):
-		return self._handler_presence
-	@on_presence.setter
-	def on_presence(self, func):
-		self._handler_presence = func
-
-	@property
-	def on_me(self):
-		return self._handler_me
-	@on_me.setter
-	def on_me(self, func):
-		self._handler_me = func
-
-	@property
-	def on_keygen(self):
-		return self._handler_keygen
-	@on_keygen.setter
-	def on_keygen(self, func):
-		self._handler_keygen = func
-
-	@property
-	def on_message(self):
-		return self._handler_message
-	@on_message.setter
-	def on_message(self, func):
-		self._handler_message = func
-
 	@staticmethod
 	def _format_channel(channel, key=None, options=None, share_group=None):
 		"""
@@ -195,27 +195,14 @@ class Client(object):
 				)
 		return formatted
 
-	def connect(self, options={}):
+	def connect(self, host="api.emitter.io", port=443, secure=True, keepalive=30):
 		"""
 		* Connects to an Emitter server.
 		"""
-		# Default options.
-		if "secure" not in options:
-			options["secure"] = True
-		defaultConnectOptions = {
-			"host": "api.emitter.io",
-			"port": 443 if options["secure"] else 8080,
-			"keepalive": 30
-		}
-		# Apply defaults.
-		for k in defaultConnectOptions:
-			options[k] = defaultConnectOptions[k] if k not in options else options[k]
-
-		options["host"] = re.sub(r"/.*?:\/\//g", "", options["host"])
-		self._callbacks = {}
+		formatted_host = re.sub(r"/.*?:\/\//g", "", host)
 		self._mqtt = mqtt.Client()
 
-		if options["secure"]:
+		if secure:
 			ssl_ctx = ssl.create_default_context()
 			self._mqtt.tls_set_context(ssl_ctx)
 
@@ -223,17 +210,12 @@ class Client(object):
 		self._mqtt.on_disconnect = self._on_disconnect
 		self._mqtt.on_message = self._on_message
 
-		self._mqtt.connect(options["host"], port=options["port"], keepalive=options["keepalive"])
+		self._mqtt.connect(host=formatted_host, port=port, keepalive=keepalive)
 
 	def publish(self, key, channel, message, ttl=None, me=True, retain=False):
 		"""
 		* Publishes a message to a channel.
 		"""
-		if not isinstance(key, str):
-			logging.error("emitter.publish: request object does not contain a 'key' string.")
-		if not isinstance(channel, str):
-			logging.error("emitter.publish: request object does not contain a 'channel' string.")
-
 		options = {}
 		if ttl is not None:
 			options["ttl"] = str(ttl)
@@ -286,11 +268,6 @@ class Client(object):
 		"""
 		* Sends a presence request to the server.
 		"""
-		if not isinstance(key, str):
-			logging.error("emitter.publish: request object does not contain a 'key' string.")
-		if not isinstance(channel, str):
-			logging.error("emitter.publish: request object does not contain a 'channel' string.")
-
 		request = {"key": key, "channel": channel}
 		# Publish the request.
 		self._mqtt.publish("emitter/presence/", json.dumps(request))
@@ -299,16 +276,11 @@ class Client(object):
 		"""
 		* Sends a key generation request to the server.
 		"""
-		if not isinstance(key, str):
-			logging.error("emitter.publish: request object does not contain a 'key' string.")
-		if not isinstance(channel, str):
-			logging.error("emitter.publish: request object does not contain a 'channel' string.")
-
 		request = {"key": key, "channel": channel}
 		# Publish the request.
 		self._mqtt.publish("emitter/keygen/", json.dumps(request))
 
-	def link(self, key, channel, name, private, subscribe, ttl=None, me=True):
+	def link(self, key: str, channel: str, name: str, private: bool, subscribe: bool, ttl: int=None, me: bool=True):
 		"""
 		* Sends a link creation request to the server.
 		"""
@@ -333,6 +305,8 @@ class Client(object):
 		"""
 		* Sends a message through the link.
 		"""
+		if not isinstance(link, str):
+			logging.error("emitter.publish_with_link: request object does not contain a 'key' string.")
 		# Publish the request.
 		self._mqtt.publish(link, message)
 
