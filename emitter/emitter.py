@@ -6,17 +6,11 @@ GitHub: github.com/emitter-io/python
 License: Eclipse Public License 1.0 (EPL-1.0)
 """
 import json
-import logging
 import re
+import logging
 import ssl
 import paho.mqtt.client as mqtt
 from subtrie import SubTrie
-
-try:
-	from urllib.parse import urlencode
-except ImportError:
-	from urllib import urlencode
-
 
 class Client(object):
 	"""
@@ -170,31 +164,6 @@ class Client(object):
 			# This is a "me" message, giving information about the connection.
 			self._handler_me(message.as_object())
 	
-	@staticmethod
-	def _format_channel(channel, key=None, options=None, share_group=None):
-		"""
-		* Formats a channel for emitter.io protocol.
-		"""
-		if key and len(key):
-			if not share_group or not len(share_group):
-				formatted = "{key}/{channel}/".format(
-					key=key.strip("/"),
-					channel=channel.strip("/"))
-			else:
-				formatted = "{key}/$share/{share_group}/{channel}/".format(
-					key=key.strip("/"),
-					share_group=share_group.strip("/"),
-					channel=channel.strip("/"))
-		else:
-			formatted = channel if channel.endswith("/") else channel + "/"
-
-		if options:
-			formatted = "{formatted}?{querystring}".format(
-					formatted=formatted,
-					querystring=urlencode(options),
-				)
-		return formatted
-
 	def connect(self, host="api.emitter.io", port=443, secure=True, keepalive=30):
 		"""
 		* Connects to an Emitter server.
@@ -212,50 +181,41 @@ class Client(object):
 
 		self._mqtt.connect(host=formatted_host, port=port, keepalive=keepalive)
 
-	def publish(self, key, channel, message, ttl=None, me=True, retain=False):
+	def publish(self, key, channel, message, options={}):
 		"""
 		* Publishes a message to a channel.
 		"""
-		options = {}
-		if ttl is not None:
-			options["ttl"] = str(ttl)
-
-		# The default server's behavior when 'me' is absent, is to send the publisher its own messages.
-		# To avoid any ambiguity, this parameter is always set here.
-		if me:
-			options["me"] = 1
-		else:
-			options["me"] = 0
-
 		topic = self._format_channel(channel, key, options)
-		self._mqtt.publish(topic, message, retain=retain)
+		qos, retain = Client._get_header(options)
 
-	def subscribe(self, key, channel, optional_handler=None, chan_options={}, share_group=None):
-		"""
-		* Subscribes to a particual channel.
-		"""
-		if not isinstance(key, str):
-			logging.error("emitter.publish: request object does not contain a 'key' string.")
-		if not isinstance(channel, str):
-			logging.error("emitter.publish: request object does not contain a 'channel' string.")
+		self._mqtt.publish(topic, message, qos=qos, retain=retain)
 
+	def subscribe(self, key, channel, optional_handler=None, options={}):
+		"""
+		* Subscribes to a particual share group.
+		"""
 		if optional_handler is not None:
 			self._handler_trie_message.insert(channel, optional_handler)
 
-		topic = self._format_channel(channel, key, chan_options, share_group)
+		topic = Client._format_channel(key, channel, options)
+		self._mqtt.subscribe(topic)
+
+	def subscribe_with_group(self, key, channel, share_group, optional_handler=None, options={}):
+		"""
+		* Subscribes to a particual share group.
+		"""
+		if optional_handler is not None:
+			self._handler_trie_message.insert(channel, optional_handler)
+
+		topic = Client._format_channel_share(key, channel, share_group, options)
 		self._mqtt.subscribe(topic)
 
 	def unsubscribe(self, key, channel):
 		"""
 		* Unsubscribes from a particular channel.
 		"""
-		if not isinstance(key, str):
-			logging.error("emitter.publish: request object does not contain a 'key' string.")
-		if not isinstance(channel, str):
-			logging.error("emitter.publish: request object does not contain a 'channel' string.")
-
 		self._handler_trie_message.delete(channel)
-		topic = self._format_channel(channel, key)
+		topic = self._format_channel(key, channel)
 		self._mqtt.unsubscribe(topic)
 
 	def disconnect(self):
@@ -280,22 +240,11 @@ class Client(object):
 		# Publish the request.
 		self._mqtt.publish("emitter/keygen/", json.dumps(request))
 
-	def link(self, key: str, channel: str, name: str, private: bool, subscribe: bool, ttl: int=None, me: bool=True):
+	def link(self, key: str, channel: str, name: str, private: bool, subscribe: bool, options={}):
 		"""
 		* Sends a link creation request to the server.
 		"""
-		options = {}
-		if ttl is not None:
-			options["ttl"] = str(ttl)
-
-		# The default server's behavior when 'me' is absent, is to send the publisher its own messages.
-		# To avoid any ambiguity, this parameter is always set here.
-		if me:
-			options["me"] = 1
-		else:
-			options["me"] = 0
-
-		formattedChannel = self._format_channel(channel, options=options)
+		formattedChannel = Client._format_channel_link(channel, options=options)
 		request = {"key": key, "channel": formattedChannel, "name": name, "private": private, "subscribe": subscribe}
 
 		# Publish the request.
@@ -305,8 +254,6 @@ class Client(object):
 		"""
 		* Sends a message through the link.
 		"""
-		if not isinstance(link, str):
-			logging.error("emitter.publish_with_link: request object does not contain a 'key' string.")
 		# Publish the request.
 		self._mqtt.publish(link, message)
 
@@ -316,6 +263,94 @@ class Client(object):
 		"""
 		self._mqtt.publish("emitter/me/", "")
 
+	@staticmethod
+	def _get_header(options):
+		retain = False
+		qos = 0
+		for o in options:
+			if o == Client.RETAIN:
+				retain = True
+			elif o == Client.QOS1:
+				qos = 1
+		
+		return retain, qos
+
+	@staticmethod
+	def _format_options(options):
+		formatted = ""
+
+		if options != None and len(options) > 0:
+			formatted = "?"
+			
+			for i, o in enumerate(options):
+			
+				if o.startswith("+"):
+					continue
+			
+				formatted += o
+
+				if i < len(options) - 1:
+					formatted += "&"
+
+		return formatted
+
+
+	@staticmethod
+	def _format_channel(key, channel, options={}):
+		k = key.strip("/")
+		c = channel.strip("/")
+		o = Client._format_options(options)
+
+		formatted = "{key}/{channel}/{options}".format(key=k, channel=c, options=o)
+		return formatted
+
+	@staticmethod
+	def _format_channel_link(channel, options={}):
+		c = channel.strip("/")
+		o = Client._format_options(options)
+
+		formatted = "{channel}/{options}".format(channel=c, options=o)
+		return formatted
+
+	@staticmethod
+	def _format_channel_share(key, channel, share_group, options={}):
+		k = key.strip("/")
+		c = channel.strip("/")
+		s = share_group.strip("/")
+		o = Client._format_options(options)
+
+		formatted = "{key}/$share/{share}/{channel}/{options}".format(key=k, share=s, channel=c, options=o)
+		return formatted
+
+	RETAIN = "+r"
+	QOS0 = "+0"
+	QOS1 = "+1"
+
+	@staticmethod
+	def with_ttl(ttl):
+		return "ttl=" + str(ttl)
+
+	@staticmethod
+	def without_echo():
+		return "me=0"
+
+	@staticmethod
+	def with_last(last):
+		return "last=" + str(last)
+
+	@staticmethod
+	def with_retain():
+		return Client.RETAIN
+	
+	@staticmethod
+	def with_at_most_once():
+		return Client.QOS0
+	
+	@staticmethod
+	def with_at_least_once():
+		return Client.QOS1
+
+	
 
 class EmitterMessage(object):
 	"""
