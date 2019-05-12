@@ -44,7 +44,7 @@ These examples show you the whole communication process.
   * [`.presence()`](#presence)
   * [`.keygen()`](#keygen)
   * [`.link()`](#link)
-  * [`.publishWithLink()`](#publishWithLink)
+  * [`.publish_with_link()`](#publishWithLink)
   * [`.me()`](#me)
 * [`EmitterMessage()`](#message)
   * [`.asString()`](#asString)
@@ -280,7 +280,7 @@ Sends a link creation request to the server. This allows for the creation of a l
 
 -------------------------------------------------------
 <a id="publishWithLink"></a>
-### Emitter#publishWithLink(link, message)
+### Emitter#publish_with_link(link, message)
 
 ```
 instance.publishWithLink("a0",
