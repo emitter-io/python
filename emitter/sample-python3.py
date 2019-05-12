@@ -7,20 +7,21 @@ emitter = Client()
 root = tkinter.Tk()
 
 channel_key = tkinter.StringVar(root, value="8jMLP9F859oDyqmJ3aV4aqnmFZpxApvb")
-#channel_key = tkinter.StringVar(root, value="EckDAy4LHt_T0eTPSBK_0dmOAGhakMgI")#local
+#channel_key = tkinter.StringVar(root, value="aghbt67CuPawxQvoBfKZ8MpecpPoz7od")#local
 channel = tkinter.StringVar(root, value="test/")
 shortcut = tkinter.StringVar(root, value="a0")
 text_message = tkinter.StringVar(root, value="Hello World")
 share_group = tkinter.StringVar(root, value="sg")
-share_group_key = tkinter.StringVar(root, value="qQrtann17qNi3CTwW7N8F4OR9uAuQBHw")
+share_group_key = tkinter.StringVar(root, value="b7FEsiGFQoSYA6qyeu1dDodFnO0ypp0f")
+#share_group_key = tkinter.StringVar(root, value="Q_dM5ODuhWjaR_LNo886hVjoecvt5pMJ") #local
 
 def connect():
-	#options = {"host": "127.0.0.1", "secure": False}
+	#emitter.connect(host="127.0.0.1", port=8080, secure=False)
 	emitter.connect()
 
 	emitter.on_connect = lambda: result_text.insert("0.0", "Connected\n\n")
 	emitter.on_disconnect = lambda: result_text.insert("0.0", "Disconnected\n\n")
-	emitter.on_presence = lambda p: result_text.insert("0.0", "Presence message: '" + str(p) + "'\n\n")
+	emitter.on_presence = lambda p: result_text.insert("0.0", "Presence message: '" + p.as_string() + "'\n\n")
 	emitter.on_message = lambda m: result_text.insert("0.0", "Message received on default handler, destined to " + m.channel + ": " + m.as_string() + "\n\n")
 	emitter.on_error = lambda e: result_text.insert("0.0", "Error received: " + str(e) + "\n\n")
 	emitter.on_me = lambda me: result_text.insert("0.0", "Information about Me received: " + str(me) +"\n\n")
@@ -42,7 +43,7 @@ def subscribe_share():
 	str_key = share_group_key.get()
 	str_channel = channel.get()
 	str_share = share_group.get()
-	emitter.subscribe(str_key,
+	emitter.subscribe_with_group(str_key,
 	 str_channel,
 	 optional_handler=lambda m: result_text.insert("0.0", "Message received on handler for " + str_channel + ": " + m.as_string() + "\n\n"),
 	 share_group=str_share)
@@ -57,11 +58,14 @@ def unsubscribe():
 def presence():
 	str_key = channel_key.get()
 	str_channel = channel.get()
-	emitter.presence(str_key, str_channel)
+	emitter.presence(str_key, str_channel, status=True, changes=True)
 	result_text.insert("0.0", "Presence on '" + str_channel + "' requested.\n\n")
 
 def message(retain=False):
-	emitter.publish(channel_key.get(), channel.get(), text_message.get(), retain=retain)
+	if retain:
+		emitter.publish(channel_key.get(), channel.get(), text_message.get(), {Client.with_retain()})
+	else:
+		emitter.publish(channel_key.get(), channel.get(), text_message.get(), {})
 	result_text.insert("0.0", "Test message send through '" + channel.get() + "'.\n\n")
 
 def link():
