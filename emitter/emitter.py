@@ -185,7 +185,7 @@ class Client(object):
 		"""
 		* Publishes a message to a channel.
 		"""
-		topic = self._format_channel(channel, key, options)
+		topic = self._format_channel(key, channel, options)
 		qos, retain = Client._get_header(options)
 
 		self._mqtt.publish(topic, message, qos=qos, retain=retain)
@@ -224,19 +224,19 @@ class Client(object):
 		"""
 		self._mqtt.disconnect()
 
-	def presence(self, key, channel):
+	def presence(self, key, channel, status=False, changes=False):
 		"""
 		* Sends a presence request to the server.
 		"""
-		request = {"key": key, "channel": channel}
+		request = {"key": key, "channel": channel, "status": status, "changes": changes}
 		# Publish the request.
 		self._mqtt.publish("emitter/presence/", json.dumps(request))
 
-	def keygen(self, key, channel):
+	def keygen(self, key, channel, permissions, ttl=0):
 		"""
 		* Sends a key generation request to the server.
 		"""
-		request = {"key": key, "channel": channel}
+		request = {"key": key, "channel": channel, "type": permissions, "ttl": ttl}
 		# Publish the request.
 		self._mqtt.publish("emitter/keygen/", json.dumps(request))
 
@@ -273,7 +273,7 @@ class Client(object):
 			elif o == Client.QOS1:
 				qos = 1
 		
-		return retain, qos
+		return qos, retain
 
 	@staticmethod
 	def _format_options(options):
