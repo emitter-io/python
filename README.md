@@ -36,20 +36,20 @@ These examples show you the whole communication process.
 
 * [`Emitter()`](#client)
   * [`.connect()`](#connect)
-  * [`.publish()`](#publish)
-  * [`.subscribe()`](#subscribe)
-  * [`.unsubscribe()`](#unsubscribe)
   * [`.disconnect()`](#disconnect)
-  * [`.on()`](#on)
-  * [`.presence()`](#presence)
   * [`.keygen()`](#keygen)
   * [`.link()`](#link)
-  * [`.publish_with_link()`](#publish_with_link)
   * [`.me()`](#me)
+  * [`.presence()`](#presence)
+  * [`.publish()`](#publish)
+  * [`.publish_with_link()`](#publish_with_link)
+  * [`.subscribe()`](#subscribe)
+  * [`.subscribe_with_group()`](#subscribe_with_group)
+  * [`.unsubscribe()`](#unsubscribe)
 * [`EmitterMessage()`](#message)
-  * [`.asString()`](#asString)
-  * [`.asObject()`](#asObject)
-  * [`.asBinary()`](#asBinary)
+  * [`.as_string()`](#as_string)
+  * [`.as_object()`](#as_object)
+  * [`.as_binary()`](#as_binary)
 
 -------------------------------------------------------
 <a id="client"></a>
@@ -124,30 +124,36 @@ Emitted when an error occurs following any request. The event comes with a statu
 ```
 -------------------------------------------------------
 <a id="connect"></a>
-### Emitter#connect(options={})
+### Emitter#connect(host="api.emitter.io", port=443, secure=True, keepalive=30)
 
 ```
-import emitter
+emitter = Client()
 
-instance = emitter.connect({
-    "host": "api.emitter.io",
-    "port": 443,
-    "keepalive": 30,
-    "secure": True
-})
+emitter.connect()
 ```
-Connects to an Emitter server and returns an [Emitter](#client) instance.
+Connects to an Emitter server.
 * `host` is the address of the Emitter broker. (Optional | `Str` | Default: `"api.emitter.io"`)
-* `port` is the port of the emitter broker. (Optional | `Int` | Default when secure: `443`, otherwise: `8080`)
-* `keepalive` is the time the connection is keeped alive (Optional | `Int` | Default: `30`)
-* `secure` is if there should be a secure connection. It's recommend to use `True`. (Optional | `Bool` | Default: `True`)
+* `port` is the port of the emitter broker. (Optional | `Int` | Default: `443`)
+* `secure` whether the connection should be secure. (Optional | `Bool` | Default: `True`)
+* `keepalive` is the time the connection is kept alive (Optional | `Int` | Default: `30`)
+
+Note: if you don't want a secure connection, set the port to 8080, unless your broker is configured differently.
+
+-------------------------------------------------------
+<a id="disconnect"></a>
+### Emitter#disconnect()
+
+```
+emitter.disconnect()
+```
+Disconnects from the connected Emitter server.
 
 -------------------------------------------------------
 <a id="publish"></a>
 ### Emitter#publish(key, channel, message, ttl=None, me=True)
 
 ```
-instance.publish("5xZjIQp6GA9fpxso1Kslqnv8d4XVWChb",
+emitter.publish("5xZjIQp6GA9fpxso1Kslqnv8d4XVWChb",
                  "channel",
                  "Hello Emitter!",
                  ttl=604800) // one week
@@ -184,52 +190,6 @@ instance.unsubscribe("5xZjIQp6GA9fpxso1Kslqnv8d4XVWChb",
 Unsubscribes from a particual channel.
 * `key` is the channel key to use for the operation. (Required | `Str`)
 * `channel` is the channel name to unsubscribe from. (Required | `Str`)
-
--------------------------------------------------------
-<a id="disconnect"></a>
-### Emitter#disconnect()
-
-```
-instance.disconnect()
-```
-Disconnects from the connected Emitter server.
-
--------------------------------------------------------
-<a id="on"></a>
-### Emitter#on(event, callback)
-
-Registers a callback for different events. See [`Emitter`](#client) for a description of the events. The callbacks are all overridden when calling [`connect()`](#on).
-
-```
-def connectCallback()
-    print("Yeah, we connected to Emitter!")
-
-def disconnectCallback()
-    print("Oh no, we disconnected from Emitter!")
-
-instance.on("connect", connectCallback)
-instance.on("disconnect", disconnectCallback)
-
-def messageHandler(message) # because of the f-Strings only for Python 3.6+
-    print("We just recreived a message!")
-    print(f"See it asString: {message.asString()}")
-    print(f"See it asObject: {message.asObject()}")
-    print(f"See it asBinary: {message.asBinary()}")
-
-instance.on("message", messageHandler)
-
-def presenceHandler(status) # because of the f-Strings only for Python 3.6+
-    if status["event"] == "subscribe":
-        print(f"A remote instance subscribed the channel! Details: {status}")
-    elif status["event"] == "unsubscribe":
-        print(f"A remote instance unsubscribed the channel! Details: {status}")
-    elif status["event"] == "status":
-        print(f"Presence information: {status}")
-
-instance.on("presence", presenceHandler)
-```
-
-**ToDo: Keygen example!**
 
 -------------------------------------------------------
 <a id="presence"></a>
