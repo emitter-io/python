@@ -44,7 +44,7 @@ These examples show you the whole communication process.
   * [`.presence()`](#presence)
   * [`.keygen()`](#keygen)
   * [`.link()`](#link)
-  * [`.publish_with_link()`](#publishWithLink)
+  * [`.publish_with_link()`](#publish_with_link)
   * [`.me()`](#me)
 * [`EmitterMessage()`](#message)
   * [`.asString()`](#asString)
@@ -279,7 +279,7 @@ Sends a link creation request to the server. This allows for the creation of a l
 * `me` determines whether the publisher wants to receive his own message sent through the link. When `False` the message will be sent to all subscribers except the one publishing. (Optional | `Bool` | Default: `True`)
 
 -------------------------------------------------------
-<a id="publishWithLink"></a>
+<a id="publish_with_link"></a>
 ### Emitter#publish_with_link(link, message)
 
 ```
