@@ -149,75 +149,28 @@ emitter.disconnect()
 Disconnects from the connected Emitter server.
 
 -------------------------------------------------------
-<a id="publish"></a>
-### Emitter#publish(key, channel, message, ttl=None, me=True)
-
-```
-emitter.publish("5xZjIQp6GA9fpxso1Kslqnv8d4XVWChb",
-                 "channel",
-                 "Hello Emitter!",
-                 ttl=604800) // one week
-```
-Publishes a message to a particual channel.
-* `key` is the channel key to use for the operation. (Required | `Str`)
-* `channel` is the channel name to publish to. (Required | `Str`)
-* `message` is the message to publish (Required | `String`)
-* `ttl` is the time to live of the message in seconds. When `None` or `0` the message will only be send to all connected instances. (Optional | `Int` | Default: `None`)
-* `me` determines whether the publisher wants to receive his own message in case he is subscribed to `channel`. When `False` the message will be sent to all subscribers except the one publishing. (Optional | `Bool` | Default: `True`)
-
--------------------------------------------------------
-<a id="subscribe"></a>
-### Emitter#subscribe(key, channel, last=None)
-
-```
-instance.subscribe("5xZjIQp6GA9fpxso1Kslqnv8d4XVWChb",
-                   "channel",
-                   last=5)
-```
-Subscribes to a particual channel.
-* `key` is the channel key to use for the operation. (Required | `Str`)
-* `channel` is the channel name to subscribe to. (Required | `Str`)
-* `last` is the number of most recent stored messages to retrieve. (Optional | `Int` | Default: `None`)
-
--------------------------------------------------------
-<a id="unsubscribe"></a>
-### Emitter#unsubscribe(key, channel)
-
-```
-instance.unsubscribe("5xZjIQp6GA9fpxso1Kslqnv8d4XVWChb",
-                     "channel")
-```
-Unsubscribes from a particual channel.
-* `key` is the channel key to use for the operation. (Required | `Str`)
-* `channel` is the channel name to unsubscribe from. (Required | `Str`)
-
--------------------------------------------------------
-<a id="presence"></a>
-### Emitter#presence(key, channel)
-
-```
-instance.presence(""5xZjIQp6GA9fpxso1Kslqnv8d4XVWChb"",
-                  "channel")
-```
-Sends a presence request to the server. See also [`Emitter`](#client-presence) for a description of the event and [`Emitter#on()`](#on) for the possibilities of event handling.
-* `key` is the channel key to use for the operation. (Required | `Str`)
-* `channel` is the channel name of which you want to call the presence. (Required | `Str`)
-
--------------------------------------------------------
 <a id="keygen"></a>
-### Emitter#keygen(key, channel)
+### Emitter#keygen(key, channel, permissions, ttl=0)
 
 ```
-instance.keygen("Z5auMQhNr0eVnGBAgWThXus1dgtSsvuQ",
-                "channel")
+instance.keygen("Z5auMQhNr0eVnGBAgWThXus1dgtSsvuQ", "channel/", "rwslpex")
 ```
 Sends a key generation request to the server. See also [`Emitter`](#client-keygen) for a description of the event and [`Emitter#on()`](#on) for the possibilities of event handling.
 * `key` is your *master key* to use for the operation. (Required | `Str`)
 * `channel` is the channel name to generate a key for. (Required | `Str`)
+* `permissions` are the permissions associated to the key. (Required | `Str`)
+  - `r` for read
+  - `w` for write
+  - `s` for store
+  - `l` for load
+  - `p` for presence
+  - `e` for extend
+  - `x` for execute
+* `ttl` is the time to live of the key. `0` means it never expires (Optional | `Int` | Default: `0`)
 
 -------------------------------------------------------
 <a id="link"></a>
-### Emitter#link(key, channel, shortcut, private, subscribe, ttl=None, me=True)
+### Emitter#link(key, channel, name, private, subscribe, ttl=None, me=True)
 
 ```
 instance.link("5xZjIQp6GA9fpxso1Kslqnv8d4XVWChb",
@@ -232,11 +185,60 @@ Sends a link creation request to the server. This allows for the creation of a l
 [Emitter: Simplify Client/Server and IoT Apps with Links and Private Links (on YouTube)](https://youtu.be/_FgKiUlEb_s) and the [Emitter Pull Request (on GitHub)](https://github.com/emitter-io/emitter/pull/183).
 * `key` is the key to the channel. (Required | `Str`)
 * `channel` is the channel name. (Required | `Str`)
-* `shortcut` is the short name for the channel. (Required | `Str`)
+* `name` is the short name for the channel. (Required | `Str`)
 * `private` whether the request is for a private channel. (Required | `Bool`)
 * `subscribe` whether or not to subscribe to the channel. (Required | `Bool`)
 * `ttl` is the time to live of each message that will be sent through the link. (Optional | `Int` | Default: `None`)
-* `me` determines whether the publisher wants to receive his own message sent through the link. When `False` the message will be sent to all subscribers except the one publishing. (Optional | `Bool` | Default: `True`)
+* `me` determines whether the publisher wants to receive his own message sent through the link. When `False` the message will be sent to all subscribers except the one publishing. (Optional | `bool` | Default: `True`)
+
+-------------------------------------------------------
+<a id="me"></a>
+### Emitter#me()
+
+```
+instance.me()
+```
+Requests information about the connection. Currently the connection id, as well as the list of links.
+
+-------------------------------------------------------
+<a id="presence"></a>
+### Emitter#presence(key, channel, status=False, changes=False, optional_handler=None)
+
+```
+instance.presence(""5xZjIQp6GA9fpxso1Kslqnv8d4XVWChb"",
+                  "channel",
+                  True,
+                  True)
+```
+Sends a presence request to the server.
+* `key` is the channel key to use for the operation. (Required | `Str`)
+* `channel` is the channel name of which you want to call the presence. (Required | `Str`)
+* `status` is whether the broker should send a full status of the channel. (Optional | `Bool` | Default: `False`)
+* `changes` is whether to subscribe to presence changes on the channel.  (Optional | `Bool` | Default: `False`)
+* `optional_handler` is the handler to insert in the handler trie.  (Optional | `callable` | Default: `None`)
+
+Note: if you do not provide a handler here, make sure you did set the default handler for all presence messages using the `on_presence` property.
+
+-------------------------------------------------------
+<a id="publish"></a>
+### Emitter#publish(key, channel, message, options={})
+
+```
+emitter.publish("5xZjIQp6GA9fpxso1Kslqnv8d4XVWChb",
+                 "channel",
+                 "Hello Emitter!",
+                 {Client.with_ttl(604800), Client.without_echo()}) // one week
+```
+Publishes a message to a particual channel.
+* `key` is the channel key to use for the operation. (Required | `Str`)
+* `channel` is the channel name to publish to. (Required | `Str`)
+* `message` is the message to publish (Required | `String`)
+* `options` a set of options. Currently available options are:
+  - `with_at_most_once()` to send with QoS0.
+  - `with_at_least_once()` to send with QoS1.
+  - `with_retain()` to retain this message.
+  - `with_ttl(ttl)` to set a time to live for the message.
+  - `without_echo()` to tell the broker not to send the message back to this client.
 
 -------------------------------------------------------
 <a id="publish_with_link"></a>
@@ -251,13 +253,40 @@ Sends a message through the link.
 * `message` is the message to send through the link. (Required | `Str`)
 
 -------------------------------------------------------
-<a id="me"></a>
-### Emitter#me()
+
+<a id="subscribe"></a>
+### Emitter#subscribe(key, channel, optional_handler=None, options={})
 
 ```
-instance.me()
+instance.subscribe("5xZjIQp6GA9fpxso1Kslqnv8d4XVWChb",
+                   "channel",
+                   options={Client.with_last(5)})
 ```
-Requests information about the connection.
+Subscribes to a particual channel.
+* `key` is the channel key to use for the operation. (Required | `Str`)
+* `channel` is the channel name to subscribe to. (Required | `Str`)
+* `optional_handler` is the handler to insert in the handler trie.  (Optional | `callable` | Default: `None`)
+* `options` a set of options. Currently available options are:
+  - `with_last(x)` to receive the last `x` messages stored on the channel.
+
+TODO
+  - `with_from`
+  - `with_until`
+
+
+Note: if you do not provide a handler here, make sure you did set the default handler for all messages using the `on_message` property.
+
+-------------------------------------------------------
+<a id="unsubscribe"></a>
+### Emitter#unsubscribe(key, channel)
+
+```
+instance.unsubscribe("5xZjIQp6GA9fpxso1Kslqnv8d4XVWChb",
+                     "channel")
+```
+Unsubscribes from a particual channel.
+* `key` is the channel key to use for the operation. (Required | `Str`)
+* `channel` is the channel name to unsubscribe from. (Required | `Str`)
 
 -------------------------------------------------------
 <a id="message"></a>
