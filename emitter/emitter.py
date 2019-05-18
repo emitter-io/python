@@ -152,7 +152,7 @@ class Client(object):
 			# This is a keygen message.
 			self._handler_keygen(message.as_object())
 
-		elif self._handler_presence and message.channel.startswith("emitter/presence"):
+		elif message.channel.startswith("emitter/presence"):
 			# This is a presence message.
 			self._invoke_trie_handlers(self._handler_trie_presence, self._handler_presence, message)
 
@@ -224,10 +224,13 @@ class Client(object):
 		"""
 		self._mqtt.disconnect()
 
-	def presence(self, key, channel, status=False, changes=False):
+	def presence(self, key, channel, status=False, changes=False, optional_handler=None):
 		"""
 		* Sends a presence request to the server.
 		"""
+		if optional_handler is not None:
+			self._handler_trie_presence.insert(channel, optional_handler)
+
 		request = {"key": key, "channel": channel, "status": status, "changes": changes}
 		# Publish the request.
 		self._mqtt.publish("emitter/presence/", json.dumps(request))
@@ -240,7 +243,7 @@ class Client(object):
 		# Publish the request.
 		self._mqtt.publish("emitter/keygen/", json.dumps(request))
 
-	def link(self, key: str, channel: str, name: str, private: bool, subscribe: bool, options={}):
+	def link(self, key, channel, name, private, subscribe, options={}):
 		"""
 		* Sends a link creation request to the server.
 		"""
