@@ -34,49 +34,177 @@ These examples show you the whole communication process.
 <a id="api"></a>
 ## API reference
 
-* [`Emitter()`](#client)
+* [`Client()`](#client)
   * [`.connect()`](#connect)
-  * [`.publish()`](#publish)
-  * [`.subscribe()`](#subscribe)
-  * [`.unsubscribe()`](#unsubscribe)
   * [`.disconnect()`](#disconnect)
-  * [`.on()`](#on)
-  * [`.presence()`](#presence)
   * [`.keygen()`](#keygen)
   * [`.link()`](#link)
-  * [`.publishWithLink()`](#publishWithLink)
   * [`.me()`](#me)
+  * [`.on_connect`](#on_connect)
+  * [`.on_disconnect`](#on_disconnect)
+  * [`.on_error`](#on_error)
+  * [`.on_keygen`](#on_keygen)
+  * [`.on_me`](#on_me)
+  * [`.on_message`](#on_message)
+  * [`.on_presence`](#on_presence)
+  * [`.presence()`](#presence)
+  * [`.publish()`](#publish)
+  * [`.publish_with_link()`](#publish_with_link)
+  * [`.subscribe()`](#subscribe)
+  * [`.subscribe_with_group()`](#subscribe_with_group)
+  * [`.unsubscribe()`](#unsubscribe)
 * [`EmitterMessage()`](#message)
-  * [`.asString()`](#asString)
-  * [`.asObject()`](#asObject)
-  * [`.asBinary()`](#asBinary)
+  * [`.as_string()`](#as_string)
+  * [`.as_object()`](#as_object)
+  * [`.as_binary()`](#as_binary)
 
 -------------------------------------------------------
 <a id="client"></a>
-### Emitter()
+### Client()
 
-The `Emitter` class represents the client connection to an Emitter server.
+The `Client` class represents the client connection to an Emitter server.
 
-See [`Emitter#on()`](#on) for the possibilities of event handling.
+-------------------------------------------------------
+<a id="connect"></a>
+### Emitter#connect(host="api.emitter.io", port=443, secure=True, keepalive=30)
 
-#### Events
+```
+emitter = Client()
 
-##### Event `'connect'`
+emitter.connect()
+```
+Connects to an Emitter server.
+* `host` is the address of the Emitter broker. (Optional | `Str` | Default: `"api.emitter.io"`)
+* `port` is the port of the emitter broker. (Optional | `Int` | Default: `443`)
+* `secure` whether the connection should be secure. (Optional | `Bool` | Default: `True`)
+* `keepalive` is the time the connection is kept alive (Optional | `Int` | Default: `30`)
 
-Emitted on successful (re)connection. No arguments provided.
+If you don't want a secure connection, set the port to 8080, unless your broker is configured differently.
 
-##### Event `'disconnect'`
+To handle connection events, see the [`.on_connect`](#on_connect) property.
 
-Emitted after a disconnection. No arguments provided.
+-------------------------------------------------------
+<a id="disconnect"></a>
+### Emitter#disconnect()
 
-##### Event `'message'`
+```
+emitter.disconnect()
+```
+Disconnects from the connected Emitter server.
+
+To handle disconnection events, see the [`.on_disconnect`](#on_disconnect) property.
+
+-------------------------------------------------------
+<a id="keygen"></a>
+### Emitter#keygen(key, channel, permissions, ttl=0)
+
+```
+instance.keygen("Z5auMQhNr0eVnGBAgWThXus1dgtSsvuQ", "channel/", "rwslpex")
+```
+Sends a key generation request to the server. See also [`Emitter`](#client-keygen) for a description of the event and [`Emitter#on()`](#on) for the possibilities of event handling.
+* `key` is your *master key* to use for the operation. (Required | `Str`)
+* `channel` is the channel name to generate a key for. (Required | `Str`)
+* `permissions` are the permissions associated to the key. (Required | `Str`)
+  - `r` for read
+  - `w` for write
+  - `s` for store
+  - `l` for load
+  - `p` for presence
+  - `e` for extend
+  - `x` for execute
+* `ttl` is the time to live of the key. `0` means it never expires (Optional | `Int` | Default: `0`)
+
+To handle keygen responses, see the [`.on_keygen`](#on_keygen) property.
+
+-------------------------------------------------------
+<a id="link"></a>
+### Emitter#link(key, channel, name, private, subscribe, options={})
+
+```
+instance.link("5xZjIQp6GA9fpxso1Kslqnv8d4XVWChb",
+              "channel",
+              "a0",
+              False,
+              True,
+              {Client.with_ttl(604800), Client.without_echo()}) // one week
+```
+Sends a link creation request to the server. This allows for the creation of a link between a short 2-character name and an actual channel. This function also allows the creation of a private channel. For more information, see 
+[Emitter: Simplify Client/Server and IoT Apps with Links and Private Links (on YouTube)](https://youtu.be/_FgKiUlEb_s) and the [Emitter Pull Request (on GitHub)](https://github.com/emitter-io/emitter/pull/183).
+* `key` is the key to the channel. (Required | `Str`)
+* `channel` is the channel name. (Required | `Str`)
+* `name` is the short name for the channel. (Required | `Str`)
+* `private` whether the request is for a private channel. (Required | `Bool`)
+* `subscribe` whether or not to subscribe to the channel. (Required | `Bool`)
+* `options` a set of options. Currently available options are:
+  - `with_at_most_once()` to send with QoS0.
+  - `with_at_least_once()` to send with QoS1.
+  - `with_retain()` to retain this message.
+  - `with_ttl(ttl)` to set a time to live for the message.
+  - `without_echo()` to tell the broker not to send the message back to this client.
+
+-------------------------------------------------------
+<a id="me"></a>
+### Emitter#me()
+
+```
+instance.me()
+```
+Requests information about the connection. Information provided in the response contains the id of the connection, as well as the links that were established with [`.link()`](#link) requests.
+
+To handle the responses, see the [`.on_me`](#on_me) property.
+
+-------------------------------------------------------
+<a id="on_connect"></a>
+### Emitter#on_connect
+
+Property used to get or set the connection handler, that handle events emitted upon successful (re)connection. No arguments provided.
+
+-------------------------------------------------------
+<a id="on_disconnect"></a>
+### Emitter#on_disconnect
+
+Property used to get or set the disconnection handler, that handle events emitted after a disconnection. No arguments provided.
+
+-------------------------------------------------------
+<a id="on_error"></a>
+### Emitter#on_error
+
+Property used to get or set the error handler, that handle events emitted when an error occurs following any request. The event comes with a status code and a text message describing the error.
+
+```
+{"status": 400,
+ "message": "the request was invalid or cannot be otherwise served"}
+```
+
+-------------------------------------------------------
+<a id="on_keygen"></a>
+### Emitter#on_keygen
+
+**ToDo: Description!**
+-------------------------------------------------------
+<a id="on_me"></a>
+### Emitter#on_me
+
+Property used to get or set the handler that handle responses to [`.me()`](#me) requests. Information provided in the response contains the id of the connection, as well as the links that were established with [`.link()`](#link) requests.
+
+```
+{"id": "74W77OC5OXDBQRUUMSHROHRQPE",
+ "links": {"a0": "test/",
+           "a1": "test/"}}
+```
+
+-------------------------------------------------------
+<a id="on_message"></a>
+### Emitter#on_message
 
 Emitted when the client receives a message packet. The message object will be of [EmitterMessage](#message) class, encapsulating the channel and the payload.
 
-<a id="client-presence"></a>
-##### Event `'presence'`
+-------------------------------------------------------
+<a id="on_presence"></a>
+### Emitter#on_presence
 
-Emitted when a presence call was made using the [`Emitter#presence()`](#presence) function. Example arguments below.
+Emitted either when a presence call was made requesting a status, using the [`Emitter#presence()`](#presence) function, or when a user subscribed/unsubscribed to the channel and updates were previously requested using again a call to the [`Emitter#presence()`](#presence) function. Example arguments below.
+
 ```
 {"time": 1577833210,
  "event": "status",
@@ -99,79 +227,102 @@ Emitted when a presence call was made using the [`Emitter#presence()`](#presence
   * `id` is an internal generated id of the remote instance.
   * `username` is a custom chosen name by the remote instance. Please note that it is **optional** and check always if this parameter exists. 
 
-<a id="client-keygen"></a>
-##### Event `'keygen'`
-
-**ToDo: Description!**
-
-##### Event `'me'`
-
-Emitted as a response to a [`.me()`](#me) request. Information provided in the response contains the id of the connection, as well as the links that were established with [`.link()`](#link) requests.
-
-```
-{"id": "74W77OC5OXDBQRUUMSHROHRQPE",
- "links": {"a0": "test/",
-           "a1": "test/"}}
-```
-
-##### Event `'error'`
-
-Emitted when an error occurs following any request. The event comes with a status code and a text message describing the error.
-
-```
-{"status": 400,
- "message": "the request was invalid or cannot be otherwise served"}
-```
 -------------------------------------------------------
-<a id="connect"></a>
-### Emitter#connect(options={})
+<a id="presence"></a>
+### Emitter#presence(key, channel, status=False, changes=False, optional_handler=None)
 
 ```
-import emitter
-
-instance = emitter.connect({
-    "host": "api.emitter.io",
-    "port": 443,
-    "keepalive": 30,
-    "secure": True
-})
+instance.presence(""5xZjIQp6GA9fpxso1Kslqnv8d4XVWChb"",
+                  "channel",
+                  True,
+                  True)
 ```
-Connects to an Emitter server and returns an [Emitter](#client) instance.
-* `host` is the address of the Emitter broker. (Optional | `Str` | Default: `"api.emitter.io"`)
-* `port` is the port of the emitter broker. (Optional | `Int` | Default when secure: `443`, otherwise: `8080`)
-* `keepalive` is the time the connection is keeped alive (Optional | `Int` | Default: `30`)
-* `secure` is if there should be a secure connection. It's recommend to use `True`. (Optional | `Bool` | Default: `True`)
+Sends a presence request to the server.
+* `key` is the channel key to use for the operation. (Required | `Str`)
+* `channel` is the channel name of which you want to call the presence. (Required | `Str`)
+* `status` is whether the broker should send a full status of the channel. (Optional | `Bool` | Default: `False`)
+* `changes` is whether to subscribe to presence changes on the channel.  (Optional | `Bool` | Default: `False`)
+* `optional_handler` is the handler to insert in the handler trie.  (Optional | `callable` | Default: `None`)
+
+Note: if you do not provide a handler here, make sure you did set the default handler for all presence messages using the [`.on_presence`](#on_presence) property.
 
 -------------------------------------------------------
 <a id="publish"></a>
-### Emitter#publish(key, channel, message, ttl=None, me=True)
+### Emitter#publish(key, channel, message, options={})
 
 ```
-instance.publish("5xZjIQp6GA9fpxso1Kslqnv8d4XVWChb",
+emitter.publish("5xZjIQp6GA9fpxso1Kslqnv8d4XVWChb",
                  "channel",
                  "Hello Emitter!",
-                 ttl=604800) // one week
+                 {Client.with_ttl(604800), Client.without_echo()}) // one week
 ```
 Publishes a message to a particual channel.
 * `key` is the channel key to use for the operation. (Required | `Str`)
 * `channel` is the channel name to publish to. (Required | `Str`)
 * `message` is the message to publish (Required | `String`)
-* `ttl` is the time to live of the message in seconds. When `None` or `0` the message will only be send to all connected instances. (Optional | `Int` | Default: `None`)
-* `me` determines whether the publisher wants to receive his own message in case he is subscribed to `channel`. When `False` the message will be sent to all subscribers except the one publishing. (Optional | `Bool` | Default: `True`)
+* `options` a set of options. Currently available options are:
+  - `with_at_most_once()` to send with QoS0.
+  - `with_at_least_once()` to send with QoS1.
+  - `with_retain()` to retain this message.
+  - `with_ttl(ttl)` to set a time to live for the message.
+  - `without_echo()` to tell the broker not to send the message back to this client.
 
 -------------------------------------------------------
+<a id="publish_with_link"></a>
+### Emitter#publish_with_link(link, message)
+
+```
+instance.publishWithLink("a0",
+                         "Hello Emitter!")
+```
+Sends a message through the link.
+* `link` is the 2-character name of the link. (Required | `Str`)
+* `message` is the message to send through the link. (Required | `Str`)
+
+-------------------------------------------------------
+
 <a id="subscribe"></a>
-### Emitter#subscribe(key, channel, last=None)
+### Emitter#subscribe(key, channel, optional_handler=None, options={})
 
 ```
 instance.subscribe("5xZjIQp6GA9fpxso1Kslqnv8d4XVWChb",
                    "channel",
-                   last=5)
+                   options={Client.with_last(5)})
 ```
-Subscribes to a particual channel.
+Subscribes to a particular channel.
 * `key` is the channel key to use for the operation. (Required | `Str`)
 * `channel` is the channel name to subscribe to. (Required | `Str`)
-* `last` is the number of most recent stored messages to retrieve. (Optional | `Int` | Default: `None`)
+* `optional_handler` is the handler to insert in the handler trie.  (Optional | `callable` | Default: `None`)
+* `options` a set of options. Currently available options are:
+  - `with_last(x)` to receive the last `x` messages stored on the channel.
+
+TODO
+  - `with_from`
+  - `with_until`
+
+Note: if you do not provide a handler here, make sure you did set the default handler for all messages using the [`.on_message`](#on_message) property.
+
+-------------------------------------------------------
+
+<a id="subscribe_with_group"></a>
+### Emitter#subscribe_with_group(key, channel, share_group, optional_handler=None, options={})
+
+```
+instance.subscribe("5xZjIQp6GA9fpxso1Kslqnv8d4XVWChb",
+                   "channel",
+                   "sg")
+```
+Subscribes to a particular share group for a channel. A message sent to that channel will be forwarded to only one member of the share group, chosen randomly. For more information about share groups, see 
+[Emitter: Load-balance Messages using Subscriber Groups (on YouTube)](https://youtu.be/Vl7iGKEQrTg).
+
+* `key` is the channel key to use for the operation. (Required | `Str`)
+* `channel` is the channel name to subscribe to. (Required | `Str`)
+* `share_group` is the name of the group to join. (Required | `Str`)
+* `optional_handler` is the handler to insert in the handler trie.  (Optional | `callable` | Default: `None`)
+* `options` a set of options.
+
+
+Note: if you do not provide a handler here, make sure you did set the default handler for all messages using the [`.on_message`](#on_message) property.
 
 -------------------------------------------------------
 <a id="unsubscribe"></a>
@@ -185,119 +336,7 @@ Unsubscribes from a particual channel.
 * `key` is the channel key to use for the operation. (Required | `Str`)
 * `channel` is the channel name to unsubscribe from. (Required | `Str`)
 
--------------------------------------------------------
-<a id="disconnect"></a>
-### Emitter#disconnect()
-
-```
-instance.disconnect()
-```
-Disconnects from the connected Emitter server.
-
--------------------------------------------------------
-<a id="on"></a>
-### Emitter#on(event, callback)
-
-Registers a callback for different events. See [`Emitter`](#client) for a description of the events. The callbacks are all overridden when calling [`connect()`](#on).
-
-```
-def connectCallback()
-    print("Yeah, we connected to Emitter!")
-
-def disconnectCallback()
-    print("Oh no, we disconnected from Emitter!")
-
-instance.on("connect", connectCallback)
-instance.on("disconnect", disconnectCallback)
-
-def messageHandler(message) # because of the f-Strings only for Python 3.6+
-    print("We just recreived a message!")
-    print(f"See it asString: {message.asString()}")
-    print(f"See it asObject: {message.asObject()}")
-    print(f"See it asBinary: {message.asBinary()}")
-
-instance.on("message", messageHandler)
-
-def presenceHandler(status) # because of the f-Strings only for Python 3.6+
-    if status["event"] == "subscribe":
-        print(f"A remote instance subscribed the channel! Details: {status}")
-    elif status["event"] == "unsubscribe":
-        print(f"A remote instance unsubscribed the channel! Details: {status}")
-    elif status["event"] == "status":
-        print(f"Presence information: {status}")
-
-instance.on("presence", presenceHandler)
-```
-
-**ToDo: Keygen example!**
-
--------------------------------------------------------
-<a id="presence"></a>
-### Emitter#presence(key, channel)
-
-```
-instance.presence(""5xZjIQp6GA9fpxso1Kslqnv8d4XVWChb"",
-                  "channel")
-```
-Sends a presence request to the server. See also [`Emitter`](#client-presence) for a description of the event and [`Emitter#on()`](#on) for the possibilities of event handling.
-* `key` is the channel key to use for the operation. (Required | `Str`)
-* `channel` is the channel name of which you want to call the presence. (Required | `Str`)
-
--------------------------------------------------------
-<a id="keygen"></a>
-### Emitter#keygen(key, channel)
-
-```
-instance.keygen("Z5auMQhNr0eVnGBAgWThXus1dgtSsvuQ",
-                "channel")
-```
-Sends a key generation request to the server. See also [`Emitter`](#client-keygen) for a description of the event and [`Emitter#on()`](#on) for the possibilities of event handling.
-* `key` is your *master key* to use for the operation. (Required | `Str`)
-* `channel` is the channel name to generate a key for. (Required | `Str`)
-
--------------------------------------------------------
-<a id="link"></a>
-### Emitter#link(key, channel, shortcut, private, subscribe, ttl=None, me=True)
-
-```
-instance.link("5xZjIQp6GA9fpxso1Kslqnv8d4XVWChb",
-              "channel",
-              "a0",
-              False,
-              True,
-              ttl=3600,
-              me=False)
-```
-Sends a link creation request to the server. This allows for the creation of a link between a short 2-character name and an actual channel. This function also allows the creation of a private channel. For more information, see 
-[Emitter: Simplify Client/Server and IoT Apps with Links and Private Links (on YouTube)](https://youtu.be/_FgKiUlEb_s) and the [Emitter Pull Request (on GitHub)](https://github.com/emitter-io/emitter/pull/183).
-* `key` is the key to the channel. (Required | `Str`)
-* `channel` is the channel name. (Required | `Str`)
-* `shortcut` is the short name for the channel. (Required | `Str`)
-* `private` whether the request is for a private channel. (Required | `Bool`)
-* `subscribe` whether or not to subscribe to the channel. (Required | `Bool`)
-* `ttl` is the time to live of each message that will be sent through the link. (Optional | `Int` | Default: `None`)
-* `me` determines whether the publisher wants to receive his own message sent through the link. When `False` the message will be sent to all subscribers except the one publishing. (Optional | `Bool` | Default: `True`)
-
--------------------------------------------------------
-<a id="publishWithLink"></a>
-### Emitter#publishWithLink(link, message)
-
-```
-instance.publishWithLink("a0",
-                         "Hello Emitter!")
-```
-Sends a message through the link.
-* `link` is the 2-character name of the link. (Required | `Str`)
-* `message` is the message to send through the link. (Required | `Str`)
-
--------------------------------------------------------
-<a id="me"></a>
-### Emitter#me()
-
-```
-instance.me()
-```
-Requests information about the connection.
+This deletes handlers for that channel from the trie.
 
 -------------------------------------------------------
 <a id="message"></a>
@@ -339,9 +378,9 @@ Returns the payload as a raw binary buffer.
 ## ToDo
 
 There are some points where the Python libary can be improved:
-- Complete the [presence](#client-presence) and [keygen](#client-keygen) entries in the README (see the **ToDo** markings)
-- Add more features to reach the same feature set as the JavaScript libary (`username` in presence)
-
+- Complete the [keygen](#client-keygen) entry in the README (see the **ToDo** markings)
+- Describe how to use the trie of handlers for regular messages and presence.
+- Add `with_from` and `with_until`.
 
 <a id="license"></a>
 ## License

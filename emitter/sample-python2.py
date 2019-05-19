@@ -1,121 +1,160 @@
-import emitter
+from emitter import Client
 import Tkinter
 import json
 
-emitter = emitter.Emitter()
+emitter = Client()
+
+root = Tkinter.Tk()
+
+channel_key = tkinter.StringVar(root, value="8jMLP9F859oDyqmJ3aV4aqnmFZpxApvb")
+#channel_key = tkinter.StringVar(root, value="aghbt67CuPawxQvoBfKZ8MpecpPoz7od")#local
+channel = tkinter.StringVar(root, value="test/")
+shortcut = tkinter.StringVar(root, value="a0")
+text_message = tkinter.StringVar(root, value="Hello World")
+share_group = tkinter.StringVar(root, value="sg")
+share_group_key = tkinter.StringVar(root, value="b7FEsiGFQoSYA6qyeu1dDodFnO0ypp0f")
+#share_group_key = tkinter.StringVar(root, value="Q_dM5ODuhWjaR_LNo886hVjoecvt5pMJ") #local
 
 def connect():
-	#options = {"host": "192.168.0.4", "secure": False}
-	options = {"secure": False}
-	emitter.connect(options)
-	emitter.on("connect", lambda: resultText.insert("0.0", "Connected\n\n"))
-	emitter.on("disconnect", lambda: resultText.insert("0.0", "Disconnected\n\n"))
-	emitter.on("presence", lambda p: resultText.insert("0.0", "Presence message: '" + str(p) + "'\n\n"))
-	emitter.on("message", lambda m: resultText.insert("0.0", "Message received on " + m.channel + ": " + m.asString() + "\n\n"))
-	emitter.on("error", lambda e: resultText.insert("0.0", "Error received: " + str(e) + "\n\n"))
-	emitter.on("me", lambda me: resultText.insert("0.0", "Information about Me received: " + str(me) +"\n\n"))
-	emitter.loopStart()
+	#emitter.connect(host="127.0.0.1", port=8080, secure=False)
+	emitter.connect()
+
+	emitter.on_connect = lambda: result_text.insert("0.0", "Connected\n\n")
+	emitter.on_disconnect = lambda: result_text.insert("0.0", "Disconnected\n\n")
+	emitter.on_presence = lambda p: result_text.insert("0.0", "Presence message: '" + p.as_string() + "'\n\n")
+	emitter.on_message = lambda m: result_text.insert("0.0", "Message received on default handler, destined to " + m.channel + ": " + m.as_string() + "\n\n")
+	emitter.on_error = lambda e: result_text.insert("0.0", "Error received: " + str(e) + "\n\n")
+	emitter.on_me = lambda me: result_text.insert("0.0", "Information about Me received: " + str(me) +"\n\n")
+	emitter.loop_start()
 
 def disconnect():
-	emitter.loopStop()
+	emitter.loop_stop()
 	emitter.disconnect()
 
-def subscribe():
-	strKey = emitterKey.get()
-	strChannel = channel.get()
-	emitter.subscribe(strKey, strChannel)
-	resultText.insert("0.0", "Subscribtion to '" + strChannel + "' requested.\n\n")
+def subscribe(share_group=None):
+	str_key = channel_key.get()
+	str_channel = channel.get()
+	emitter.subscribe(str_key,
+	 str_channel,
+	 optional_handler=lambda m: result_text.insert("0.0", "Message received on handler for " + str_channel + ": " + m.as_string() + "\n\n"))
+	result_text.insert("0.0", "Subscribtion to '" + str_channel + "' requested.\n\n")
+
+def subscribe_share():
+	str_key = share_group_key.get()
+	str_channel = channel.get()
+	str_share = share_group.get()
+	emitter.subscribe_with_group(str_key,
+	 str_channel,
+	 optional_handler=lambda m: result_text.insert("0.0", "Message received on handler for " + str_channel + ": " + m.as_string() + "\n\n"),
+	 share_group=str_share)
+	result_text.insert("0.0", "Subscribtion to '" + str_channel + "' requested.\n\n")
 
 def unsubscribe():
-	strKey = emitterKey.get()
-	strChannel = channel.get()
-	emitter.unsubscribe(strKey, strChannel)
-	resultText.insert("0.0", "Unsubscribtion to '" + strChannel + "' requested.\n\n")
+	str_key = channel_key.get()
+	str_channel = channel.get()
+	emitter.unsubscribe(str_key, str_channel)
+	result_text.insert("0.0", "Unsubscribtion to '" + str_channel + "' requested.\n\n")
 
 def presence():
-	strKey = emitterKey.get()
-	strChannel = channel.get()
-	emitter.presence(strKey, strChannel)
-	resultText.insert("0.0", "Presence on '" + strChannel + "' requested.\n\n")
+	str_key = channel_key.get()
+	str_channel = channel.get()
+	emitter.presence(str_key, str_channel, status=True, changes=True)
+	result_text.insert("0.0", "Presence on '" + str_channel + "' requested.\n\n")
 
-def message():
-	strKey = emitterKey.get()
-	strChannel = channel.get()
-	emitter.publish(strKey, strChannel, json.dumps({"key1": "value1", "key2": 2}))
-	resultText.insert("0.0", "Test message send through '" + strChannel + "'.\n\n")
+def message(retain=False):
+	if retain:
+		emitter.publish(channel_key.get(), channel.get(), text_message.get(), {Client.with_retain()})
+	else:
+		emitter.publish(channel_key.get(), channel.get(), text_message.get(), {})
+	result_text.insert("0.0", "Test message send through '" + channel.get() + "'.\n\n")
 
 def link():
-	strKey = emitterKey.get()
-	strChannel = channel.get()
-	strLink = shortcut.get()
-	emitter.link(strKey, strChannel, strLink, False, True)
+	str_key = channel_key.get()
+	str_channel = channel.get()
+	str_link = shortcut.get()
+	emitter.link(str_key, str_channel, str_link, False, True)
 
-def linkPrivate():
-	strKey = emitterKey.get()
-	strChannel = channel.get()
-	strLink = shortcut.get()
-	emitter.link(strKey, strChannel, strLink, True, True)
+def link_private():
+	str_key = channel_key.get()
+	str_channel = channel.get()
+	str_link = shortcut.get()
+	emitter.link(str_key, str_channel, str_link, True, True)
 
-def pubToLink():
-	strLink = shortcut.get()
-	emitter.publishWithLink(strLink, json.dumps({"key1": "value1", "key2": 2}))
+def pub_to_link():
+	str_link = shortcut.get()
+	emitter.publish_with_link(str_link, text_message.get())
 
 def me():
 	emitter.me()
 
-root = Tkinter.Tk()
-emitterKey = Tkinter.StringVar(root, value="5xZjIQp6GA9fpxso1Kslqnv8d4XVWCha")
-#emitterKey = Tkinter.StringVar(root, value="EckDAy4LHt_T0eTPSBK_0dmOAGhakMgI")#local
-channel = Tkinter.StringVar(root, value="test/")
-shortcut = Tkinter.StringVar(root, value="a0")
-
 # Col 1
-Tkinter.Label(root, text="Emitter key : ").grid(column=1, row=1)
-emitterKeyEntry = Tkinter.Entry(root, width=40, textvariable=emitterKey)
-emitterKeyEntry.grid(column=1, row=2)
+Tkinter.Label(root, text="Channel : ").grid(column=1, row=1)
+channel_entry = Tkinter.Entry(root, width=40, textvariable=channel)
+channel_entry.grid(column=1, row=2)
 
-Tkinter.Label(root, text="Channel : ").grid(column=1, row=3)
-channelEntry = Tkinter.Entry(root, width=40, textvariable=channel)
-channelEntry.grid(column=1, row=4)
+Tkinter.Label(root, text="Channel key : ").grid(column=1, row=3)
+channel_key_entry = Tkinter.Entry(root, width=40, textvariable=channel_key)
+channel_key_entry.grid(column=1, row=4)
 
 Tkinter.Label(root, text="Shortcut : ").grid(column=1, row=5)
-shortcutEntry = Tkinter.Entry(root, width=40, textvariable=shortcut)
-shortcutEntry.grid(column=1, row=6)
+shortcut_entry = Tkinter.Entry(root, width=40, textvariable=shortcut)
+shortcut_entry.grid(column=1, row=6)
+
+Tkinter.Label(root, text="Message : ").grid(column=1, row=7)
+message_entry = Tkinter.Entry(root, width=40, textvariable=text_message)
+message_entry.grid(column=1, row=8)
+
+Tkinter.Label(root, text="Share group : ").grid(column=1, row=9)
+share_entry = Tkinter.Entry(root, width=40, textvariable=share_group)
+share_entry.grid(column=1, row=10)
+
+Tkinter.Label(root, text="Share group key : ").grid(column=1, row=11)
+share_key_entry = Tkinter.Entry(root, width=40, textvariable=share_group_key)
+share_key_entry.grid(column=1, row=12)
+
 
 # Col 2
-connectButton = Tkinter.Button(root, text="Connect", width=30, command=connect)
-connectButton.grid(column=2, row=1)
+connect_button = Tkinter.Button(root, text="Connect", width=30, command=connect)
+connect_button.grid(column=2, row=1)
 
-disconnectButton = Tkinter.Button(root, text="Disconnect", width=30, command=disconnect)
-disconnectButton.grid(column=2, row=2)
+disconnect_button = Tkinter.Button(root, text="Disconnect", width=30, command=disconnect)
+disconnect_button.grid(column=2, row=2)
 
-subscribeButton = Tkinter.Button(root, text="Subscribe", width=30, command=subscribe)
-subscribeButton.grid(column=2, row=4)
+subscribe_button = Tkinter.Button(root, text="Subscribe", width=30, command=subscribe)
+subscribe_button.grid(column=2, row=4)
 
-unsubscribeButton = Tkinter.Button(root, text="Unsubscribe", width=30, command=unsubscribe)
-unsubscribeButton.grid(column=2, row=5)
+unsubscribe_button = Tkinter.Button(root, text="Unsubscribe", width=30, command=unsubscribe)
+unsubscribe_button.grid(column=2, row=5)
+
+subscribe_share_button = Tkinter.Button(root, text="Subscribe to share", width=30, command=subscribe_share)
+subscribe_share_button.grid(column=2, row=6)
 
 # Col 3
-linkButton = Tkinter.Button(root, text="Link to shortcut", width=30, command=link)
-linkButton.grid(column=3, row=1)
+link_button = Tkinter.Button(root, text="Link to shortcut", width=30, command=link)
+link_button.grid(column=3, row=1)
 
-linkPrivateButton = Tkinter.Button(root, text="Link to private channel", width=30, command=linkPrivate)
-linkPrivateButton.grid(column=3, row=2)
+link_private_button = Tkinter.Button(root, text="Link to private channel", width=30, command=link_private)
+link_private_button.grid(column=3, row=2)
 
-sendButton = Tkinter.Button(root, text="Publish to channel", width=30, command=message)
-sendButton.grid(column=3, row=4)
 
-pubToLinkButton = Tkinter.Button(root, text="Publish to link", width=30, command=pubToLink)
-pubToLinkButton.grid(column=3, row=5)
+send_button = Tkinter.Button(root, text="Publish to channel", width=30, command=message)
+send_button.grid(column=3, row=4)
+
+send_button = Tkinter.Button(root, text="Publish to channel with retain", width=30, command=lambda: message(retain=True))
+send_button.grid(column=3, row=5)
+
+pub_to_link_button = Tkinter.Button(root, text="Publish to link", width=30, command=pub_to_link)
+pub_to_link_button.grid(column=3, row=6)
 
 # Col 4
-presenceButton = Tkinter.Button(root, text="Presence", width=30, command=presence)
-presenceButton.grid(column=4, row=1)
+presence_button = Tkinter.Button(root, text="Presence", width=30, command=presence)
+presence_button.grid(column=4, row=1)
 
-meButton = Tkinter.Button(root, text="Me", width=30, command=me)
-meButton.grid(column=4, row=2)
+me_button = Tkinter.Button(root, text="Me", width=30, command=me)
+me_button.grid(column=4, row=2)
 
-resultText = Tkinter.Text(root, height=30, width=120)
-resultText.grid(column=1, row=8, columnspan=4)
+# Text area
+result_text = Tkinter.Text(root, height=30, width=120)
+result_text.grid(column=1, row=14, columnspan=4)
 
 root.mainloop()
