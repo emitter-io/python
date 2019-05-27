@@ -1,1 +1,1 @@
-from .emitter import Emitter
+from .emitter import Client
