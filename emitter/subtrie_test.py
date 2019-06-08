@@ -1,5 +1,8 @@
 import pytest
-from subtrie import SubTrie
+try:
+    from .subtrie import SubTrie
+except ImportError:
+    from subtrie import SubTrie
 
 
 def test_lookup_with_wildcard():

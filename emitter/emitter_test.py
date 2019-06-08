@@ -1,20 +1,32 @@
 import pytest
-import emitter
+try:
+    from .emitter import Client
+except ImportError:
+    from emitter import Client
 
-def test_formatChannel():
+def test_format_channel():
     tests = [
         {"key": "5xZjIQp6GA9fpxso1Kslqnv8d4XVWCha", "channel": "test", "options": None, "expected": "5xZjIQp6GA9fpxso1Kslqnv8d4XVWCha/test/"},
         {"key": "5xZjIQp6GA9fpxso1Kslqnv8d4XVWCha", "channel": "test/", "options": None, "expected": "5xZjIQp6GA9fpxso1Kslqnv8d4XVWCha/test/"},
         {"key": "5xZjIQp6GA9fpxso1Kslqnv8d4XVWCha/", "channel": "test", "options": None, "expected": "5xZjIQp6GA9fpxso1Kslqnv8d4XVWCha/test/"},
         {"key": "5xZjIQp6GA9fpxso1Kslqnv8d4XVWCha/", "channel": "test/", "options": None, "expected": "5xZjIQp6GA9fpxso1Kslqnv8d4XVWCha/test/"},
         # With options.
-        {"key": "5xZjIQp6GA9fpxso1Kslqnv8d4XVWCha", "channel": "test", "options": {"ttl":5}, "expected": "5xZjIQp6GA9fpxso1Kslqnv8d4XVWCha/test/?ttl=5"},
-        {"key": "5xZjIQp6GA9fpxso1Kslqnv8d4XVWCha", "channel": "test", "options": {"ttl":5,"me":0}, "expected": "5xZjIQp6GA9fpxso1Kslqnv8d4XVWCha/test/?ttl=5&me=0"},
-        # Links (without a channel key).
-        {"key": "", "channel": "test", "options": {"ttl":5,"me":0}, "expected": "test/?ttl=5&me=0"},
-        {"key": None, "channel": "test", "options": {"ttl":5,"me":0}, "expected": "test/?ttl=5&me=0"},
+        {"key": "5xZjIQp6GA9fpxso1Kslqnv8d4XVWCha", "channel": "test", "options": {Client.with_ttl(5)}, "expected": "5xZjIQp6GA9fpxso1Kslqnv8d4XVWCha/test/?ttl=5"},
+        # The following test won't always work, since the enumeration of the options vary in order.
+        #{"key": "5xZjIQp6GA9fpxso1Kslqnv8d4XVWCha", "channel": "test", "options": {Client.with_ttl(5), Client.without_echo()}, "expected": "5xZjIQp6GA9fpxso1Kslqnv8d4XVWCha/test/?ttl=5&me=0"}
         ]
     
     for test in tests:
-        formatted = emitter.Emitter._formatChannel(key=test["key"], channel=test["channel"], options=test["options"])  
+        formatted = Client._format_channel(key=test["key"], channel=test["channel"], options=test["options"])  
         assert formatted == test["expected"]
+
+def test_format_channel_link():
+    tests = [
+        {"channel": "test", "options": {Client.with_ttl(5)}, "expected": "test/?ttl=5"},
+        ]
+    
+    for test in tests:
+        formatted = Client._format_channel_link(channel=test["channel"], options=test["options"])  
+        assert formatted == test["expected"]
+
+# Todo test shared

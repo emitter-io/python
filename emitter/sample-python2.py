@@ -1,4 +1,7 @@
-from emitter import Client
+try:
+    from .emitter import Client
+except ImportError:
+    from emitter import Client
 import Tkinter
 import json
 

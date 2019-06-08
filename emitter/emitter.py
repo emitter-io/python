@@ -10,7 +10,10 @@ import re
 import logging
 import ssl
 import paho.mqtt.client as mqtt
-from .subtrie import SubTrie
+try:
+    from .subtrie import SubTrie
+except ImportError:
+   from subtrie import SubTrie
 
 
 class Client(object):
