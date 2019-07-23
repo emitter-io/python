@@ -383,9 +383,10 @@ class EmitterMessage(object):
 		"""
 		return str(self.binary)
 
+	# TODO: rename this one and produce a real object.
 	def as_object(self):
 		"""
-		* Returns the payload as an JSON-deserialized Python object.
+		* Returns the payload as an JSON-deserialized dictionary.
 		"""
 		msg = None
 		try:
