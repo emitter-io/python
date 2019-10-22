@@ -186,7 +186,7 @@ class Client(object):
 			# This is a "me" message, giving information about the connection.
 			self._handler_me(message.as_object())
 	
-	def connect(self, host="api.emitter.io", port=443, secure=True, keepalive=30):
+	def connect(self, host="api.emitter.io", port=443, secure=True, keepalive=30, username=None):
 		"""
 		* Connects to an Emitter server.
 		"""
@@ -196,6 +196,9 @@ class Client(object):
 		if secure:
 			ssl_ctx = ssl.create_default_context()
 			self._mqtt.tls_set_context(ssl_ctx)
+
+		if username is not None:
+			self._mqtt.username_pw_set(username)
 
 		self._mqtt.on_connect = self._on_connect
 		self._mqtt.on_disconnect = self._on_disconnect
