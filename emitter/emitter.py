@@ -158,7 +158,13 @@ class Client(object):
 
 		elif message.channel.startswith("emitter/presence"):
 			# This is a presence message.
-			self._invoke_trie_handlers(self._handler_trie_presence, self._handler_presence, message)
+			#self._invoke_trie_handlers(self._handler_trie_presence, self._handler_presence, message)
+			messageContent = message.as_object()
+			handlers = self._handler_trie_presence.lookup(messageContent["channel"])
+			if len(handlers) == 0 and self._handler_presence:
+				self._handler_presence(messageContent)
+			for h in handlers:
+				h(messageContent)
 
 		elif self._handler_error and message.channel.startswith("emitter/error"):
 			# This is an error message.
@@ -377,9 +383,10 @@ class EmitterMessage(object):
 		"""
 		return str(self.binary)
 
+	# TODO: rename this one and produce a real object.
 	def as_object(self):
 		"""
-		* Returns the payload as an JSON-deserialized Python object.
+		* Returns the payload as an JSON-deserialized dictionary.
 		"""
 		msg = None
 		try:

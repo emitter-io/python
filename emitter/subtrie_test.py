@@ -33,6 +33,14 @@ def test_lookup_with_wildcard():
         results = t.lookup(k)
         assert len(results) == v
 
+def test_replace_handler():
+    t = SubTrie()
+    t.insert("a", lambda: "a1")
+    t.insert("a", lambda: "a2")
+
+    results = t.lookup("a")
+    assert len(results) == 1
+    assert results[0]() == "a2"
 
 def test_delete_parent():
     t = SubTrie()

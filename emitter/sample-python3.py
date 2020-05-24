@@ -19,12 +19,12 @@ share_group_key = tkinter.StringVar(root, value="b7FEsiGFQoSYA6qyeu1dDodFnO0ypp0
 #share_group_key = tkinter.StringVar(root, value="Q_dM5ODuhWjaR_LNo886hVjoecvt5pMJ") #local
 
 def connect():
-	emitter.connect(host="192.168.0.10", port=8080, secure=False)
+	emitter.connect(host="127.0.0.1", port=8080, secure=False)
 	#emitter.connect()
 
 	emitter.on_connect = lambda: result_text.insert("0.0", "Connected\n\n")
 	emitter.on_disconnect = lambda: result_text.insert("0.0", "Disconnected\n\n")
-	emitter.on_presence = lambda p: result_text.insert("0.0", "Presence message: '" + p.as_string() + "'\n\n")
+	emitter.on_presence = lambda p: result_text.insert("0.0", "Presence message on channel: '" + str(p) + "'\n\n")
 	emitter.on_message = lambda m: result_text.insert("0.0", "Message received on default handler, destined to " + m.channel + ": " + m.as_string() + "\n\n")
 	emitter.on_error = lambda e: result_text.insert("0.0", "Error received: " + str(e) + "\n\n")
 	emitter.on_me = lambda me: result_text.insert("0.0", "Information about Me received: " + str(me) +"\n\n")
@@ -61,7 +61,7 @@ def unsubscribe():
 def presence():
 	str_key = channel_key.get()
 	str_channel = channel.get()
-	emitter.presence(str_key, str_channel, status=True, changes=True)
+	emitter.presence(str_key, str_channel, status=True, changes=True) #optional_handler=lambda p: result_text.insert("0.0", "Optional handler: '" + str(p) + "'\n\n"))
 	result_text.insert("0.0", "Presence on '" + str_channel + "' requested.\n\n")
 
 def message(retain=False):

@@ -360,7 +360,7 @@ Returns the payload as a utf-8 `String`.
 ```
 message.asObject()
 ```
-Returns the payload as a JSON-deserialized Python `Object`.
+Returns the payload as a JSON-deserialized dictionary.
 
 -------------------------------------------------------
 <a id="asBinary"></a>
@@ -379,6 +379,7 @@ There are some points where the Python libary can be improved:
 - Complete the [keygen](#client-keygen) entry in the README (see the **ToDo** markings)
 - Describe how to use the trie of handlers for regular messages and presence.
 - Add `with_from` and `with_until`.
+- asObject should return an actual object instead of a dictionary.
 
 <a id="license"></a>
 ## License
