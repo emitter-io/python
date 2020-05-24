@@ -75,13 +75,7 @@ def link():
 	str_key = channel_key.get()
 	str_channel = channel.get()
 	str_link = shortcut.get()
-	emitter.link(str_key, str_channel, str_link, False, True)
-
-def link_private():
-	str_key = channel_key.get()
-	str_channel = channel.get()
-	str_link = shortcut.get()
-	emitter.link(str_key, str_channel, str_link, True, True)
+	emitter.link(str_key, str_channel, str_link, True)
 
 def pub_to_link():
 	str_link = shortcut.get()
@@ -135,10 +129,6 @@ subscribe_share_button.grid(column=2, row=6)
 # Col 3
 link_button = Tkinter.Button(root, text="Link to shortcut", width=30, command=link)
 link_button.grid(column=3, row=1)
-
-link_private_button = Tkinter.Button(root, text="Link to private channel", width=30, command=link_private)
-link_private_button.grid(column=3, row=2)
-
 
 send_button = Tkinter.Button(root, text="Publish to channel", width=30, command=message)
 send_button.grid(column=3, row=4)

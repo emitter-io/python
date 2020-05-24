@@ -115,6 +115,7 @@ Sends a key generation request to the server. See also [`Emitter`](#client-keyge
 * `ttl` is the time to live of the key. `0` means it never expires (Optional | `Int` | Default: `0`)
 
 To handle keygen responses, see the [`.on_keygen`](#on_keygen) property.
+Requesting a keygen with an extendable channel creates a private channel.
 
 -------------------------------------------------------
 <a id="link"></a>
@@ -124,16 +125,13 @@ To handle keygen responses, see the [`.on_keygen`](#on_keygen) property.
 instance.link("5xZjIQp6GA9fpxso1Kslqnv8d4XVWChb",
               "channel",
               "a0",
-              False,
               True,
               {Client.with_ttl(604800), Client.without_echo()}) // one week
 ```
-Sends a link creation request to the server. This allows for the creation of a link between a short 2-character name and an actual channel. This function also allows the creation of a private channel. For more information, see 
-[Emitter: Simplify Client/Server and IoT Apps with Links and Private Links (on YouTube)](https://youtu.be/_FgKiUlEb_s) and the [Emitter Pull Request (on GitHub)](https://github.com/emitter-io/emitter/pull/183).
+Sends a link creation request to the server. This allows for the creation of a link between a short 2-character name and an actual channel. This function no longer allows the creation of a private channel. For this, use [`.keygen`](#keygen).
 * `key` is the key to the channel. (Required | `Str`)
 * `channel` is the channel name. (Required | `Str`)
 * `name` is the short name for the channel. (Required | `Str`)
-* `private` whether the request is for a private channel. (Required | `Bool`)
 * `subscribe` whether or not to subscribe to the channel. (Required | `Bool`)
 * `options` a set of options. Currently available options are:
   - `with_at_most_once()` to send with QoS0.

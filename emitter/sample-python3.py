@@ -19,8 +19,8 @@ share_group_key = tkinter.StringVar(root, value="b7FEsiGFQoSYA6qyeu1dDodFnO0ypp0
 #share_group_key = tkinter.StringVar(root, value="Q_dM5ODuhWjaR_LNo886hVjoecvt5pMJ") #local
 
 def connect():
-	#emitter.connect(host="127.0.0.1", port=8080, secure=False)
-	emitter.connect()
+	emitter.connect(host="192.168.0.10", port=8080, secure=False)
+	#emitter.connect()
 
 	emitter.on_connect = lambda: result_text.insert("0.0", "Connected\n\n")
 	emitter.on_disconnect = lambda: result_text.insert("0.0", "Disconnected\n\n")
@@ -75,13 +75,7 @@ def link():
 	str_key = channel_key.get()
 	str_channel = channel.get()
 	str_link = shortcut.get()
-	emitter.link(str_key, str_channel, str_link, False, True)
-
-def link_private():
-	str_key = channel_key.get()
-	str_channel = channel.get()
-	str_link = shortcut.get()
-	emitter.link(str_key, str_channel, str_link, True, True)
+	emitter.link(str_key, str_channel, str_link, True)
 
 def pub_to_link():
 	str_link = shortcut.get()
@@ -135,10 +129,6 @@ subscribe_share_button.grid(column=2, row=6)
 # Col 3
 link_button = tkinter.Button(root, text="Link to shortcut", width=30, command=link)
 link_button.grid(column=3, row=1)
-
-link_private_button = tkinter.Button(root, text="Link to private channel", width=30, command=link_private)
-link_private_button.grid(column=3, row=2)
-
 
 send_button = tkinter.Button(root, text="Publish to channel", width=30, command=message)
 send_button.grid(column=3, row=4)

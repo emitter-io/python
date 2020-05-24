@@ -247,12 +247,12 @@ class Client(object):
 		# Publish the request.
 		self._mqtt.publish("emitter/keygen/", json.dumps(request))
 
-	def link(self, key, channel, name, private, subscribe, options={}):
+	def link(self, key, channel, name, subscribe, options={}):
 		"""
 		* Sends a link creation request to the server.
 		"""
 		formattedChannel = Client._format_channel_link(channel, options=options)
-		request = {"key": key, "channel": formattedChannel, "name": name, "private": private, "subscribe": subscribe}
+		request = {"key": key, "channel": formattedChannel, "name": name, "subscribe": subscribe}
 
 		# Publish the request.
 		self._mqtt.publish("emitter/link/", json.dumps(request))
