@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="emitter-io",
-    version="2.0.3",
+    version="2.1.0",
     author="Florimond Husquinet",
     author_email="florimond@emitter.io",
     description="A Python library to interact with the Emitter API.",
