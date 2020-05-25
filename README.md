@@ -198,9 +198,9 @@ Property used to get or set the error handler, that handle events emitted when a
 
 Property used to get or set the handler for [`.keyban()`](#keyban) requests. Here is a sample of the message received after such a request:
 
-```json
-{'status': 200,
- 'banned': True}
+```
+{"status": 200,
+ "banned": True}
 ```
 
 -------------------------------------------------------
