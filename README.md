@@ -30,6 +30,7 @@ These examples show you the whole communication process.
 * Python 2: [*sample-python2.py*](emitter/sample-python2.py)
 * Python 3: [*sample-python3.py*](emitter/sample-python3.py)
 
+![alt animated gif demonstrating the todo list](SampleAppScreenshot.png?raw=true)
 
 <a id="api"></a>
 ## API reference
@@ -37,12 +38,14 @@ These examples show you the whole communication process.
 * [`Client()`](#client)
   * [`.connect()`](#connect)
   * [`.disconnect()`](#disconnect)
+  * [`.keyban()`](#keyban)
   * [`.keygen()`](#keygen)
   * [`.link()`](#link)
   * [`.me()`](#me)
   * [`.on_connect`](#on_connect)
   * [`.on_disconnect`](#on_disconnect)
   * [`.on_error`](#on_error)
+  * [`.on_keyban`](#on_keyban)
   * [`.on_keygen`](#on_keygen)
   * [`.on_me`](#on_me)
   * [`.on_message`](#on_message)
@@ -68,7 +71,7 @@ The `Client` class represents the client connection to an Emitter server.
 <a id="connect"></a>
 ### Emitter#connect(host="api.emitter.io", port=443, secure=True, keepalive=30)
 
-```
+```python
 emitter = Client()
 
 emitter.connect()
@@ -87,7 +90,7 @@ To handle connection events, see the [`.on_connect`](#on_connect) property.
 <a id="disconnect"></a>
 ### Emitter#disconnect()
 
-```
+```python
 emitter.disconnect()
 ```
 Disconnects from the connected Emitter server.
@@ -95,13 +98,28 @@ Disconnects from the connected Emitter server.
 To handle disconnection events, see the [`.on_disconnect`](#on_disconnect) property.
 
 -------------------------------------------------------
+<a id="keyban"></a>
+### Emitter#keyban(master_key, target_key, ban)
+
+```python
+instance.keyban("MEj8QNnzy6pKtE887hpXbD0KyKXi4w4f", "ftibXtPMKXI5p2FjhyINf8tvl2GAHaNG", True)
+```
+Sends a request to ban/unban a channel key. 
+* `master_key` is your *master key* to use for the operation. (Required | `Str`)
+* `target_key` is the key ban or unban. (Required | `Str`)
+* `ban` is whether to ban or unban the key. (Required | `Bool`)
+
+To handle keyban responses, see the [`.on_keyban`](#on_keyban) property.
+Requesting a keygen with an extendable channel creates a private channel.
+
+-------------------------------------------------------
 <a id="keygen"></a>
 ### Emitter#keygen(key, channel, permissions, ttl=0)
 
-```
+```python
 instance.keygen("Z5auMQhNr0eVnGBAgWThXus1dgtSsvuQ", "channel/", "rwslpex")
 ```
-Sends a key generation request to the server. See also [`Emitter`](#client-keygen) for a description of the event and [`Emitter#on()`](#on) for the possibilities of event handling.
+Sends a key generation request to the server. 
 * `key` is your *master key* to use for the operation. (Required | `Str`)
 * `channel` is the channel name to generate a key for. (Required | `Str`)
 * `permissions` are the permissions associated to the key. (Required | `Str`)
@@ -121,7 +139,7 @@ Requesting a keygen with an extendable channel creates a private channel.
 <a id="link"></a>
 ### Emitter#link(key, channel, name, private, subscribe, options={})
 
-```
+```python
 instance.link("5xZjIQp6GA9fpxso1Kslqnv8d4XVWChb",
               "channel",
               "a0",
@@ -144,7 +162,7 @@ Sends a link creation request to the server. This allows for the creation of a l
 <a id="me"></a>
 ### Emitter#me()
 
-```
+```python
 instance.me()
 ```
 Requests information about the connection. Information provided in the response contains the id of the connection, as well as the links that were established with [`.link()`](#link) requests.
@@ -169,9 +187,20 @@ Property used to get or set the disconnection handler, that handle events emitte
 
 Property used to get or set the error handler, that handle events emitted when an error occurs following any request. The event comes with a status code and a text message describing the error.
 
-```
+```json
 {"status": 400,
  "message": "the request was invalid or cannot be otherwise served"}
+```
+
+-------------------------------------------------------
+<a id="on_keyban"></a>
+### Emitter#on_keyban
+
+Property used to get or set the handler for [`.keyban()`](#keyban) requests. Here is a sample of the message received after such a request:
+
+```json
+{'status': 200,
+ 'banned': True}
 ```
 
 -------------------------------------------------------
@@ -179,13 +208,14 @@ Property used to get or set the error handler, that handle events emitted when a
 ### Emitter#on_keygen
 
 **ToDo: Description!**
+
 -------------------------------------------------------
 <a id="on_me"></a>
 ### Emitter#on_me
 
 Property used to get or set the handler that handle responses to [`.me()`](#me) requests. Information provided in the response contains the id of the connection, as well as the links that were established with [`.link()`](#link) requests.
 
-```
+```json
 {"id": "74W77OC5OXDBQRUUMSHROHRQPE",
  "links": {"a0": "test/",
            "a1": "test/"}}
@@ -203,7 +233,7 @@ Emitted when the client receives a message packet. The message object will be of
 
 Emitted either when a presence call was made requesting a status, using the [`Emitter#presence()`](#presence) function, or when a user subscribed/unsubscribed to the channel and updates were previously requested using again a call to the [`Emitter#presence()`](#presence) function. Example arguments below.
 
-```
+```json
 {"time": 1577833210,
  "event": "status",
  "channel": "<channel name>",
@@ -229,7 +259,7 @@ Emitted either when a presence call was made requesting a status, using the [`Em
 <a id="presence"></a>
 ### Emitter#presence(key, channel, status=False, changes=False, optional_handler=None)
 
-```
+```python
 instance.presence(""5xZjIQp6GA9fpxso1Kslqnv8d4XVWChb"",
                   "channel",
                   True,
@@ -248,7 +278,7 @@ Note: if you do not provide a handler here, make sure you did set the default ha
 <a id="publish"></a>
 ### Emitter#publish(key, channel, message, options={})
 
-```
+```python
 emitter.publish("5xZjIQp6GA9fpxso1Kslqnv8d4XVWChb",
                  "channel",
                  "Hello Emitter!",
@@ -269,7 +299,7 @@ Publishes a message to a particual channel.
 <a id="publish_with_link"></a>
 ### Emitter#publish_with_link(link, message)
 
-```
+```python
 instance.publishWithLink("a0",
                          "Hello Emitter!")
 ```
@@ -282,7 +312,7 @@ Sends a message through the link.
 <a id="subscribe"></a>
 ### Emitter#subscribe(key, channel, optional_handler=None, options={})
 
-```
+```python
 instance.subscribe("5xZjIQp6GA9fpxso1Kslqnv8d4XVWChb",
                    "channel",
                    options={Client.with_last(5)})
@@ -305,7 +335,7 @@ Note: if you do not provide a handler here, make sure you did set the default ha
 <a id="subscribe_with_group"></a>
 ### Emitter#subscribe_with_group(key, channel, share_group, optional_handler=None, options={})
 
-```
+```python
 instance.subscribe("5xZjIQp6GA9fpxso1Kslqnv8d4XVWChb",
                    "channel",
                    "sg")
@@ -326,7 +356,7 @@ Note: if you do not provide a handler here, make sure you did set the default ha
 <a id="unsubscribe"></a>
 ### Emitter#unsubscribe(key, channel)
 
-```
+```python
 instance.unsubscribe("5xZjIQp6GA9fpxso1Kslqnv8d4XVWChb",
                      "channel")
 ```
@@ -348,7 +378,7 @@ The `EmitterMessage` class represents a message received from the Emitter server
 <a id="asString"></a>
 ### EmitterMessage#asString()
 
-```
+```python
 message.asString()
 ```
 Returns the payload as a utf-8 `String`.
@@ -357,7 +387,7 @@ Returns the payload as a utf-8 `String`.
 <a id="asObject"></a>
 ### EmitterMessage#asObject()
 
-```
+```python
 message.asObject()
 ```
 Returns the payload as a JSON-deserialized dictionary.
@@ -366,7 +396,7 @@ Returns the payload as a JSON-deserialized dictionary.
 <a id="asBinary"></a>
 ### EmitterMessage#asBinary()
 
-```
+```python
 message.asBinary()
 ```
 Returns the payload as a raw binary buffer.

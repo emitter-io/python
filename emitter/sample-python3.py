@@ -17,6 +17,7 @@ text_message = tkinter.StringVar(root, value="Hello World")
 share_group = tkinter.StringVar(root, value="sg")
 share_group_key = tkinter.StringVar(root, value="b7FEsiGFQoSYA6qyeu1dDodFnO0ypp0f")
 #share_group_key = tkinter.StringVar(root, value="Q_dM5ODuhWjaR_LNo886hVjoecvt5pMJ") #local
+master_key = tkinter.StringVar(root, value="MEj8QNnzy6pKtE887hpXbD0KyKXi4w4f")
 
 def connect():
 	emitter.connect(host="127.0.0.1", port=8080, secure=False)
@@ -27,7 +28,8 @@ def connect():
 	emitter.on_presence = lambda p: result_text.insert("0.0", "Presence message on channel: '" + str(p) + "'\n\n")
 	emitter.on_message = lambda m: result_text.insert("0.0", "Message received on default handler, destined to " + m.channel + ": " + m.as_string() + "\n\n")
 	emitter.on_error = lambda e: result_text.insert("0.0", "Error received: " + str(e) + "\n\n")
-	emitter.on_me = lambda me: result_text.insert("0.0", "Information about Me received: " + str(me) +"\n\n")
+	emitter.on_me = lambda me: result_text.insert("0.0", "Information about Me received: " + str(me) + "\n\n")
+	emitter.on_keyban = lambda kb: result_text.insert("0.0", "Keyban message received: " + str(kb) + "\n\n")
 	emitter.loop_start()
 
 def disconnect():
@@ -84,6 +86,16 @@ def pub_to_link():
 def me():
 	emitter.me()
 
+def keyban():
+	str_target_key = channel_key.get()
+	str_master_key = master_key.get()
+	emitter.keyban(str_master_key, str_target_key, True)
+
+def keyunban():
+	str_target_key = channel_key.get()
+	str_master_key = master_key.get()
+	emitter.keyban(str_master_key, str_target_key, False)
+
 # Col 1
 tkinter.Label(root, text="Channel : ").grid(column=1, row=1)
 channel_entry = tkinter.Entry(root, width=40, textvariable=channel)
@@ -109,6 +121,9 @@ tkinter.Label(root, text="Share group key : ").grid(column=1, row=11)
 share_key_entry = tkinter.Entry(root, width=40, textvariable=share_group_key)
 share_key_entry.grid(column=1, row=12)
 
+tkinter.Label(root, text="Master key : ").grid(column=1, row=13)
+share_key_entry = tkinter.Entry(root, width=40, textvariable=master_key)
+share_key_entry.grid(column=1, row=14)
 
 # Col 2
 connect_button = tkinter.Button(root, text="Connect", width=30, command=connect)
@@ -146,8 +161,14 @@ presence_button.grid(column=4, row=1)
 me_button = tkinter.Button(root, text="Me", width=30, command=me)
 me_button.grid(column=4, row=2)
 
+keyban_button = tkinter.Button(root, text="Key ban", width=30, command=keyban)
+keyban_button.grid(column=4, row=4)
+
+keyban_button = tkinter.Button(root, text="Key unban", width=30, command=keyunban)
+keyban_button.grid(column=4, row=5)
+
 # Text area
 result_text = tkinter.Text(root, height=30, width=120)
-result_text.grid(column=1, row=14, columnspan=4)
+result_text.grid(column=1, row=15, columnspan=4)
 
 root.mainloop()

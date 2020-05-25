@@ -35,6 +35,7 @@ class Client(object):
 		self._handler_trie_presence = SubTrie()
 		self._handler_me = None
 		self._handler_keygen = None
+		self._handler_keyban = None
 
 	@property
 	def on_connect(self):
@@ -77,6 +78,13 @@ class Client(object):
 	@on_keygen.setter
 	def on_keygen(self, func):
 		self._handler_keygen = func
+
+	@property
+	def on_keyban(self):
+		return self._handler_keyban
+	@on_keyban.setter
+	def on_keyban(self, func):
+		self._handler_keyban = func
 
 	@property
 	def on_message(self):
@@ -155,6 +163,10 @@ class Client(object):
 		if self._handler_keygen and message.channel.startswith("emitter/keygen"):
 			# This is a keygen message.
 			self._handler_keygen(message.as_object())
+
+		elif self._handler_keyban and message.channel.startswith("emitter/keyban"):
+			# This is a keyban message.
+			self._handler_keyban(message.as_object())
 
 		elif message.channel.startswith("emitter/presence"):
 			# This is a presence message.
@@ -244,6 +256,14 @@ class Client(object):
 		request = {"key": key, "channel": channel, "status": status, "changes": changes}
 		# Publish the request.
 		self._mqtt.publish("emitter/presence/", json.dumps(request))
+
+	def keyban(self, master_key, target_key, ban):
+		"""
+		* Sends a ban or unban request for a target key using a master key.
+		"""
+		request = {"secret": master_key, "target": target_key, "banned": ban}
+		# Publish the request.
+		self._mqtt.publish("emitter/keyban/", json.dumps(request))
 
 	def keygen(self, key, channel, permissions, ttl=0):
 		"""
