@@ -30,7 +30,7 @@ These examples show you the whole communication process.
 * Python 2: [*sample-python2.py*](emitter/sample-python2.py)
 * Python 3: [*sample-python3.py*](emitter/sample-python3.py)
 
-![alt animated gif demonstrating the todo list](SampleAppScreenshot.png?raw=true)
+![alt screenshot of the sample app](SampleAppScreenshot.png?raw=true)
 
 <a id="api"></a>
 ## API reference
