@@ -110,7 +110,7 @@ Sends a request to ban/unban a channel key.
 * `ban` is whether to ban or unban the key. (Required | `Bool`)
 
 To handle keyban responses, see the [`.on_keyban`](#on_keyban) property.
-Requesting a keygen with an extendable channel creates a private channel.
+It will take a minute for the change to take effect.
 
 -------------------------------------------------------
 <a id="keygen"></a>
