@@ -5,3 +5,5 @@ emitter_io.egg-info
 *.pyc
 .vscode/
 .pytest_cache/
+
+venv
