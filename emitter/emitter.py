@@ -5,6 +5,7 @@ This is the Python client for Emitter (emitter.io).
 GitHub: github.com/emitter-io/python
 License: Eclipse Public License 1.0 (EPL-1.0)
 """
+from datetime import datetime
 import json
 import re
 import logging
@@ -31,6 +32,7 @@ class Client(object):
 		self._handler_connect = None
 		self._handler_disconnect = None
 		self._handler_error = None
+		self._handler_history = None
 		self._handler_presence = None
 		self._handler_trie_presence = SubTrie()
 		self._handler_me = None
@@ -92,6 +94,13 @@ class Client(object):
 	@on_message.setter
 	def on_message(self, func):
 		self._handler_message = func
+
+	@property
+	def on_history(self):
+		return self._handler_history
+	@on_message.setter
+	def on_history(self, func):
+		self._handler_history = func
 
 	def loop(self, timeout):
 		"""
@@ -159,8 +168,9 @@ class Client(object):
 		# Non-emitter messages are far more frequent, so if it is one, return earlier.
 		if (not message.channel.startswith("emitter")):
 			self._invoke_trie_handlers(self._handler_trie_message, self._handler_message, message)
-
-		if self._handler_keygen and message.channel.startswith("emitter/keygen"):
+		elif self._handler_history and message.channel.startswith("emitter/history"):
+			self._handler_history(message.as_object())
+		elif self._handler_keygen and message.channel.startswith("emitter/keygen"):
 			# This is a keygen message.
 			self._handler_keygen(message.as_object())
 
@@ -299,6 +309,10 @@ class Client(object):
 		"""
 		self._mqtt.publish("emitter/me/", "")
 
+	def history(self, key, last_message_id):
+		request = { "key": key, "channel": key + "/test/?from=" + str(1685608812) + "&until=" + str(1725643968), "lastMessageID": last_message_id}
+		self._mqtt.publish("emitter/history/", json.dumps(request))
+
 	@staticmethod
 	def _get_header(options):
 		retain = False
@@ -387,7 +401,7 @@ class Client(object):
 		return Client.QOS1
 
 	
-
+# message ID?????
 class EmitterMessage(object):
 	"""
 	* Represents a message received from the Emitter server.
@@ -399,6 +413,10 @@ class EmitterMessage(object):
 		"""
 		self.channel = message.topic
 		self.binary = message.payload
+		self.raw = message
+
+	def raw(self):
+		return self.raw
 
 	def as_string(self):
 		"""
